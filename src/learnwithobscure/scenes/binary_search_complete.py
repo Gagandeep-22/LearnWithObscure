@@ -1,13 +1,17 @@
+import hashlib
 from pathlib import Path
+import shutil
+import subprocess
+import wave
 
 from manim import *
 
 
-# Render this scene with -qh (1080p) or -qk (4K), not -ql (480p preview).
+# Render this scene with --disable_caching to preserve all narration sounds.
 
 
 # ============================================================
-# LEARN WITH OBSCURE — BINARY SEARCH
+# LEARN WITH OBSCURE - BINARY SEARCH
 # Complete Manim scene with illustrated character assets
 # ============================================================
 
@@ -24,9 +28,10 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 ASSET_DIR = PROJECT_ROOT / "assets" / "characters"
 STUDENT_IMAGE = ASSET_DIR / "student_chibi.png"
 ROBOT_IMAGE = ASSET_DIR / "robot_mentor.png"
+SUBSCRIBE_IMAGE = ASSET_DIR / "Chibi Creator\u2019s Subscribe Moment.png"
 
 
-def make_text(content, size=24, color=DARK, font="DejaVu Sans", **kwargs):
+def make_text(content, size=24, color=DARK, font="Arial", **kwargs):
     """Consistent typography for the whole animation."""
     return Text(
         content,
@@ -37,8 +42,13 @@ def make_text(content, size=24, color=DARK, font="DejaVu Sans", **kwargs):
     )
 
 
+def make_heading(content, size=24, color=DARK, **kwargs):
+    """Consistent, bold headings that remain legible in mobile renders."""
+    return make_text(content, size=size, color=color, weight="BOLD", **kwargs)
+
+
 def create_student():
-    """Load the illustrated chibi learner avatar."""
+    """Load Obscure, the illustrated chibi learner avatar."""
     if not STUDENT_IMAGE.exists():
         raise FileNotFoundError(
             f"Couldn't find {STUDENT_IMAGE}. "
@@ -50,12 +60,12 @@ def create_student():
         scale_to_resolution=1080,
         resampling_algorithm=RESAMPLING_ALGORITHMS["bicubic"],
     )
-    avatar.scale_to_fit_height(2.55)
+    avatar.scale_to_fit_height(3.05)
     return avatar
 
 
 def create_robot():
-    """Load the illustrated anime-style robot mentor."""
+    """Load Zeno Sensei, the calm robot mentor avatar."""
     if not ROBOT_IMAGE.exists():
         raise FileNotFoundError(
             f"Couldn't find {ROBOT_IMAGE}. "
@@ -67,7 +77,7 @@ def create_robot():
         scale_to_resolution=1080,
         resampling_algorithm=RESAMPLING_ALGORITHMS["bicubic"],
     )
-    robot.scale_to_fit_height(2.45)
+    robot.scale_to_fit_height(2.95)
     return robot
 
 
@@ -86,32 +96,64 @@ def make_cell(value, index, x):
     number.move_to(square)
 
     index_label = make_text(str(index), size=17, color=PURPLE)
-    index_label.next_to(square, DOWN, buff=0.10)
+    index_label.next_to(square, DOWN, buff=0.20)
 
     return VGroup(square, number), index_label
 
 
+def make_array_range(cells, index_labels, low_index, high_index, color):
+    """Frame the active cells and their index labels together."""
+    contents = VGroup(
+        *cells[low_index:high_index + 1],
+        *index_labels[low_index:high_index + 1],
+    )
+    return SurroundingRectangle(
+        contents, color=color, buff=0.12, stroke_width=2.5
+    )
+
+
 # ============================================================
-# LEARN WITH OBSCURE — FULL BINARY SEARCH LESSON
-# Silent content-first cut; voiceover will be added after visuals are finalized.
+# LEARN WITH OBSCURE - FULL BINARY SEARCH LESSON
+# Dialogue audio is synthesized locally; no API key is required.
 # Render from the project root:
-# uv run manim -pqh src/learnwithobscure/scenes/binary_search_complete.py BinarySearchDemo
+# uv run manim --disable_caching -pqh src/learnwithobscure/scenes/binary_search_complete.py BinarySearchDemo
 # ============================================================
 
 class BinarySearchDemo(Scene):
-    """A complete, silent, content-first introduction to binary search.
+    """A narrated, character-led introduction to binary search."""
 
-    Dialogue text and animation are retained. Voiceover can be added after
-    the educational content and visuals are finalized.
-    """
+    def make_narration_audio(self, narration, speaker):
+        """Synthesize cached offline narration with FFmpeg's libflite filter."""
+        ffmpeg = shutil.which("ffmpeg")
+        if ffmpeg is None:
+            raise FileNotFoundError("FFmpeg is required for offline narration.")
+        audio_dir = PROJECT_ROOT / "media" / "audio_files" / "binary_search_demo"
+        audio_dir.mkdir(parents=True, exist_ok=True)
+        voice = "slt" if speaker == "student" else "kal"
+        cache_key = hashlib.sha256(f"{voice}:{narration}".encode("utf-8")).hexdigest()[:20]
+        audio_path = audio_dir / f"{cache_key}.wav"
+        if not audio_path.exists():
+            text_path = audio_dir / f"{cache_key}.txt"
+            text_path.write_text(narration, encoding="utf-8")
+            subprocess.run(
+                [ffmpeg, "-hide_banner", "-loglevel", "error", "-y",
+                 "-f", "lavfi", "-i", f"flite=textfile={text_path.name}:voice={voice}",
+                 "-ac", "1", "-ar", "24000", "-c:a", "pcm_s16le", str(audio_path)],
+                cwd=audio_dir,
+                check=True,
+            )
+        with wave.open(str(audio_path), "rb") as audio_file:
+            return audio_path, audio_file.getnframes() / audio_file.getframerate()
 
     def speak(self, narration, speaker="robot", *animations, run_time=1.2, **play_kwargs):
-        """Play a deliberately paced visual beat; voiceover will be added later."""
+        """Play a quick visual beat, then hold until the spoken line finishes."""
+        audio_path, speech_duration = self.make_narration_audio(narration, speaker)
+        self.add_sound(str(audio_path))
         if animations:
             self.play(*animations, run_time=run_time, **play_kwargs)
-        # Give each dialogue beat a little extra reading time; voiceover timing
-        # can replace this fixed pause when narration is added.
-        self.wait(1.4)
+            self.wait(max(0, speech_duration - run_time))
+        else:
+            self.wait(speech_duration)
 
     def dialogue_line(self, text, size=18):
         return make_text(text, size=size, color=DARK).move_to(self.dialogue_box)
@@ -120,12 +162,12 @@ class BinarySearchDemo(Scene):
         self.camera.background_color = BG
 
         # ----------------------------------------------------
-        # Title and characters — retain the original layout
+        # Title and characters - retain the original layout
         # ----------------------------------------------------
-        title = make_text("Binary Search", size=40, color=DARK)
+        title = make_heading("Binary Search", size=40, color=DARK)
         title.move_to([0, 3.28, 0])
-        subtitle = make_text(
-            "Can we find 10 in just 3 checks?", size=21, color=PURPLE
+        subtitle = make_heading(
+            "Obscure needs to find 10 in a sorted array.", size=21, color=PURPLE
         )
         subtitle.next_to(title, DOWN, buff=0.10)
         self.play(
@@ -134,8 +176,8 @@ class BinarySearchDemo(Scene):
             run_time=0.8,
         )
 
-        student = create_student().move_to([-5.35, -1.45, 0])
-        robot = create_robot().move_to([5.35, -1.45, 0])
+        student = create_student().move_to([-5.1, -1.28, 0])
+        robot = create_robot().move_to([5.1, -1.28, 0])
         self.play(
             FadeIn(student, shift=UP * 0.22, scale=0.94),
             FadeIn(robot, shift=UP * 0.22, scale=0.94),
@@ -153,34 +195,34 @@ class BinarySearchDemo(Scene):
             stroke_color=PURPLE, stroke_width=2.2,
             fill_color=WHITE, fill_opacity=1,
         ).move_to([0, -3.28, 0])
-        dialogue = make_text("Let's find 10 together!", size=19, color=DARK)
+        dialogue = make_text("Obscure: Help me find 10, Zeno Sensei!", size=19, color=DARK)
         dialogue.move_to(self.dialogue_box)
         self.play(
             FadeIn(self.dialogue_box, shift=UP * 0.12),
             FadeIn(dialogue, scale=0.92),
             run_time=0.65,
         )
-
         # ----------------------------------------------------
-        # Introduction: problem, sorted data, and target
+        # Introduction: Obscure brings a real problem before the algorithm appears.
         # ----------------------------------------------------
         self.speak(
-            "Can we find ten without checking every number? Let's try binary search.",
+            "Zeno Sensei, I need your help! I have a sorted array with seven numbers, and I need to find ten. Do I have to check every number one at a time, or is there a faster way?",
             "student",
-            Transform(dialogue, self.dialogue_line("Chibi: Can we find 10 in 3 checks?")),
+            Transform(dialogue, self.dialogue_line("Obscure: Is there a faster way than checking each number?", 17)),
             student.animate.shift(UP * 0.12),
             run_time=0.8,
         )
         self.speak(
-            "Let's work through an example together. First, there is one very important requirement: "
-            "the list must already be sorted, from smallest to largest.",
+            "Of course! Let me introduce you to binary search. It finds a target in a sorted array by checking "
+            "the middle value. The comparison tells us which half can be discarded, so we repeat the process "
+            "on a smaller range until we find the target or run out of values.",
             "robot",
-            Transform(dialogue, self.dialogue_line("Robot: Binary search needs sorted data.")),
+            Transform(dialogue, self.dialogue_line("Zeno Sensei: Check the middle, then keep the possible half.", 16)),
             run_time=0.7,
         )
 
         # ----------------------------------------------------
-        # Array and target — same values and positions as original
+        # Array and target - same values and positions as original
         # ----------------------------------------------------
         values = [2, 4, 6, 8, 10, 12, 14]
         cells = VGroup()
@@ -191,13 +233,18 @@ class BinarySearchDemo(Scene):
             cells.add(cell)
             index_labels.add(index_label)
         self.speak(
-            "Here is our sorted list: two, four, six, eight, ten, twelve, and fourteen. "
-            "Notice that the numbers are in ascending order.",
+            "Here are the values, in order: two, four, six, eight, ten, twelve, and fourteen.",
             "robot",
-            Transform(dialogue, self.dialogue_line("Robot: Here is our sorted list.")),
+            Transform(dialogue, self.dialogue_line("Zeno Sensei: The values are sorted from 2 to 14.", 16)),
             LaggedStart(*[FadeIn(cell, scale=0.82) for cell in cells], lag_ratio=0.10),
             FadeIn(index_labels),
-            run_time=1.0,
+            run_time=1.8,
+        )
+        self.speak(
+            "Each value is greater than the one before it. That sorted order is our clue: comparing the middle tells us which side we can rule out.",
+            "robot",
+            LaggedStart(*[Indicate(cell, color=PURPLE) for cell in cells], lag_ratio=0.12),
+            run_time=2.5,
         )
 
         target_label = make_text("TARGET", size=15, color=PURPLE)
@@ -205,49 +252,65 @@ class BinarySearchDemo(Scene):
         target_group = VGroup(target_label, target_value).arrange(RIGHT, buff=0.15)
         target_group.move_to([0, -0.78, 0])
         self.speak(
-            "And the number we want to find is ten. We will call this our target.",
+            "Our target is ten. We compare the middle value with ten and keep only the half that could still contain it.",
             "robot",
+            Transform(dialogue, self.dialogue_line("Zeno Sensei: We compare each value with our target, 10.", 16)),
             FadeIn(target_group, scale=0.9),
             run_time=0.5,
         )
         self.speak(
-            "Got it! We are looking for ten in this sorted list.",
+            "Why does being sorted help? Do the numbers line up and confess?",
             "student",
-            Transform(dialogue, self.dialogue_line("Chibi: Our target is 10!")),
+            Transform(dialogue, self.dialogue_line("Obscure: Why does sorted help?", 17)),
             run_time=0.6,
+        )
+        self.speak(
+            "If the middle is eight, every value before it is smaller too. Since our target is ten, we can rule out that whole side at once.",
+            "robot",
+            Transform(dialogue, self.dialogue_line("Zeno Sensei: Sorted order lets us rule out half at once.", 16)),
+            Indicate(cells[3], color=PINK),
+            Indicate(VGroup(*cells[0:3]), color=LAVENDER),
+            run_time=2.0,
         )
 
         # ----------------------------------------------------
         # Explain low, high, and mid
         # ----------------------------------------------------
-        low = make_text("LOW", size=17, color=PURPLE).move_to([x_positions[0], 1.55, 0])
-        mid = make_text("MID", size=17, color=PINK).move_to([x_positions[3], 1.55, 0])
-        high = make_text("HIGH", size=17, color=PURPLE).move_to([x_positions[6], 1.55, 0])
+        def intro_marker_positions(low_index, mid_index, high_index):
+            indices = {"low": low_index, "mid": mid_index, "high": high_index}
+            positions = {}
+            for index in set(indices.values()):
+                occupants = [name for name in ("low", "mid", "high") if indices[name] == index]
+                offsets = {1: (0.0,), 2: (0.27, -0.27), 3: (0.48, 0.0, -0.48)}[len(occupants)]
+                for name, offset in zip(occupants, offsets):
+                    positions[name] = [x_positions[index], 1.7 + offset, 0]
+            return positions
+
+        initial_positions = intro_marker_positions(0, 3, 6)
+        low = make_text("LOW", size=17, color=PURPLE).move_to(initial_positions["low"])
+        mid = make_text("MID", size=17, color=PINK).move_to(initial_positions["mid"])
+        high = make_text("HIGH", size=17, color=PURPLE).move_to(initial_positions["high"])
         self.speak(
-            "Binary search keeps track of three positions. Low marks the first index we are still considering. "
-            "High marks the last index. And mid points to the middle index between them.",
+            "We track three indices. LOW and HIGH mark the ends of the active range; MID marks the position we inspect next. At the start, LOW is zero and HIGH is six.",
             "robot",
-            Transform(dialogue, self.dialogue_line("Robot: Meet LOW, MID, and HIGH.")),
+            Transform(dialogue, self.dialogue_line("Zeno Sensei: LOW and HIGH set the range; MID is our next check.", 16)),
             FadeIn(low, shift=DOWN * 0.12),
             FadeIn(mid, shift=DOWN * 0.12),
             FadeIn(high, shift=DOWN * 0.12),
             run_time=0.65,
         )
-        active_range = SurroundingRectangle(
-            VGroup(*cells[0:7]), color=LAVENDER, buff=0.09, stroke_width=2.5
-        )
+        active_range = make_array_range(cells, index_labels, 0, 6, LAVENDER)
         self.speak(
-            "At the beginning, the whole list is available to search. So low is at index zero, "
-            "and high is at index six.",
+            "All seven positions are still candidates: LOW starts at zero and HIGH at six.",
             "robot",
+            Transform(dialogue, self.dialogue_line("Zeno Sensei: All seven positions are still possible.", 16)),
             Create(active_range),
-            run_time=0.5,
+            run_time=0.8,
         )
         self.speak(
-            "To find mid, we add low and high, then divide by two. "
-            "In programming, we use integer division so the result is a whole-number index. "
-            "Here, zero plus six, divided by two, gives us index three.",
+            "MID is halfway between LOW and HIGH. Add zero and six, divide by two, and keep the whole-number result: index three. Its value is eight.",
             "robot",
+            Transform(dialogue, self.dialogue_line("Zeno Sensei: (0 + 6) / 2 gives MID = 3, value 8.", 16)),
             Indicate(cells[3], color=PINK, scale_factor=1.12),
             run_time=0.8,
         )
@@ -256,61 +319,70 @@ class BinarySearchDemo(Scene):
         # Iteration 1: middle value 8, discard left section
         # ----------------------------------------------------
         self.speak(
-            "Let's check the value at index three. It is eight. Is eight our target, ten?",
+            "Our first middle index is three, and its value is eight. Eight is not ten; it is smaller. So if ten is in the array, it must be somewhere to the right of index three.",
             "robot",
-            Transform(dialogue, self.dialogue_line("Robot: MID points to 8. Is it 10?")),
+            Transform(dialogue, self.dialogue_line("Zeno Sensei: MID is 8, below 10, so search right.", 16)),
             run_time=0.9,
         )
         self.speak(
-            "No! Eight is smaller than ten.",
+            "Eight is smaller than ten, so I see why we move right of eight. But why can we also throw away two, four, and six? We never compared those values with ten directly. "
+            "They did nothing wrong.",
             "student",
-            Transform(dialogue, self.dialogue_line("Chibi: No, 8 is smaller than 10!")),
+            Transform(dialogue, self.dialogue_line("Obscure: Why rule out numbers we never checked?", 17)),
             run_time=0.55,
         )
-        new_low = make_text("LOW", size=17, color=PURPLE).move_to([x_positions[4], 1.55, 0])
+        new_low = make_text("LOW", size=17, color=PURPLE).move_to(intro_marker_positions(4, 3, 6)["low"])
         right_range = SurroundingRectangle(
             VGroup(*cells[4:7]), color=PINK, buff=0.09, stroke_width=3
         )
         self.speak(
-            "Exactly! Since the list is sorted, every value to the left of eight must be even smaller. "
-            "Those values cannot be ten, so we can safely discard them. We move low to index four. "
-            "The remaining search range is now ten, twelve, and fourteen.",
+            "Because the array is sorted, two, four, and six are also below ten. We can rule out that whole side without checking each value.",
             "robot",
+            Transform(dialogue, self.dialogue_line("Zeno Sensei: 2, 4, and 6 must also be too small.", 16)),
+            Indicate(cells[3], color=PINK),
+            Indicate(VGroup(*cells[0:3]), color=LAVENDER),
+            run_time=2.0,
+        )
+        self.speak(
+            "LOW moves to index four. Ten, twelve, and fourteen are the candidates that remain.",
+            "robot",
+            Transform(dialogue, self.dialogue_line("Zeno Sensei: Sorted order rules out 2, 4, and 6; LOW moves to 4.", 15)),
             low.animate.move_to(new_low),
             Transform(active_range, right_range),
-            run_time=0.7,
+            run_time=1.2,
         )
 
         # ----------------------------------------------------
         # Iteration 2: middle value 12, discard right section
         # ----------------------------------------------------
-        new_mid = make_text("MID", size=17, color=PINK).move_to([x_positions[5], 1.55, 0])
+        new_mid = make_text("MID", size=17, color=PINK).move_to(intro_marker_positions(4, 5, 6)["mid"])
         self.speak(
-            "Now low is four and high is six. Their middle index is five. "
-            "Let's inspect the value at index five.",
+            "The active range is indices four through six. Add the bounds, four and six, and divide by two: the new middle is index five. Its value is twelve, so we compare twelve with our target, ten.",
             "robot",
+            Transform(dialogue, self.dialogue_line("Zeno Sensei: MID is index 5, where the value is 12.", 16)),
             mid.animate.move_to(new_mid),
             Indicate(cells[5], color=PINK, scale_factor=1.12),
             run_time=0.9,
         )
         self.speak(
-            "The value is twelve. That is larger than our target, ten.",
+            "Twelve is larger than ten. In a sorted array, twelve and everything after it are too large.",
             "robot",
-            Transform(dialogue, self.dialogue_line("Robot: 12 is larger than 10.")),
-            run_time=0.55,
+            Transform(dialogue, self.dialogue_line("Zeno Sensei: 12 is too large; search to its left.", 16)),
+            Indicate(VGroup(*cells[5:7]), color=LAVENDER),
+            run_time=1.5,
         )
         self.speak(
-            "So ten must be somewhere to the left of twelve. We can remove twelve and fourteen from our search!",
+            "Then we can discard twelve and fourteen because both are too large. The remaining candidates are ten and the value before it, right?",
             "student",
-            Transform(dialogue, self.dialogue_line("Chibi: Keep the left side!", 17)),
+            Transform(dialogue, self.dialogue_line("Obscure: So we can rule out 12 and 14?", 17)),
             run_time=0.6,
         )
-        new_high = make_text("HIGH", size=17, color=PURPLE).move_to([x_positions[4], 1.55, 0])
+        new_high = make_text("HIGH", size=17, color=PURPLE).move_to(intro_marker_positions(4, 5, 4)["high"])
         final_range = SurroundingRectangle(cells[4], color=PINK, buff=0.10, stroke_width=3.2)
         self.speak(
-            "Perfect. We move high back to index four. Now low and high both point to index four. "
-            "Only one value remains in our search range.",
+            "Right. HIGH moves to one before MID, index four. LOW is already there, so one candidate remains: ten.",
             "robot",
+            Transform(dialogue, self.dialogue_line("Zeno Sensei: LOW and HIGH meet at index 4: one candidate.", 16)),
             high.animate.move_to(new_high),
             Transform(active_range, final_range),
             run_time=0.7,
@@ -320,18 +392,18 @@ class BinarySearchDemo(Scene):
         # Iteration 3: target found
         # ----------------------------------------------------
         self.speak(
-            "When low and high point to the same index, that index is also the middle. "
-            "Let's check index four!",
+            "When low and high meet at index four, the middle is also index four. We check that last candidate. Its value is ten, exactly equal to our target.",
             "robot",
+            Transform(dialogue, self.dialogue_line("Zeno Sensei: The last candidate is at index 4: value 10.", 16)),
             FadeOut(low),
             FadeOut(high),
-            mid.animate.move_to([x_positions[4], 1.55, 0]),
+            mid.animate.move_to(intro_marker_positions(4, 4, 4)["mid"]),
             Indicate(cells[4], color=PINK, scale_factor=1.18),
             run_time=0.9,
         )
-        found_message = self.dialogue_line("Robot: 10! We found it!", 20)
+        found_message = self.dialogue_line("Zeno Sensei: 10 found at index 4.", 16)
         self.speak(
-            "And the value is ten! It matches our target. We found it!",
+            "The value is ten and our target is ten, so the comparison is equal. We found the target at index four. The search stops as soon as that equality check succeeds.",
             "robot",
             Transform(dialogue, found_message),
             cells[4][0].animate.set_fill(PINK, opacity=0.28),
@@ -339,8 +411,9 @@ class BinarySearchDemo(Scene):
             run_time=0.8,
         )
         self.speak(
-            "Yay! We found ten in just three comparisons! That was much quicker than checking every number one by one.",
+            "I get it! We keep cutting the possible values in half.",
             "student",
+            Transform(dialogue, self.dialogue_line("Obscure: We keep cutting the possible values in half!", 17)),
             student.animate.shift(UP * 0.18),
             robot.animate.shift(UP * 0.18),
             rate_func=there_and_back,
@@ -349,9 +422,9 @@ class BinarySearchDemo(Scene):
         success = make_text("FOUND IN 3 COMPARISONS!", size=21, color=PURPLE)
         success.move_to([0, -1.55, 0])
         self.speak(
-            "Three comparisons. And each time, we reduced the number of possible locations. "
-            "That is the key idea behind binary search.",
+            "Three comparisons found ten: we ruled out the left half, then the right, and checked the final candidate.",
             "robot",
+            Transform(dialogue, self.dialogue_line("Zeno Sensei: Three checks found 10 by halving the range.", 16)),
             FadeIn(success, scale=0.82),
             Flash(cells[4], color=PINK, flash_radius=0.55),
             run_time=0.8,
@@ -369,7 +442,7 @@ class BinarySearchDemo(Scene):
             run_time=0.8,
         )
 
-        trace_title = make_text(
+        trace_title = make_heading(
             "Now watch the code drive each visual step", size=29, color=DARK
         ).move_to([0, 3.25, 0])
         trace_panel = RoundedRectangle(
@@ -390,7 +463,7 @@ class BinarySearchDemo(Scene):
         ]
         code_group = VGroup(*[
             Text(
-                line, font="DejaVu Sans Mono", font_size=15,
+                line, font="Consolas", font_size=15,
                 color=DARK, disable_ligatures=True,
             )
             for line in code_lines
@@ -413,41 +486,75 @@ class BinarySearchDemo(Scene):
             cell, index_label = make_cell(value, i, trace_x[i])
             trace_cells.add(cell)
             trace_indices.add(index_label)
-        low_marker = make_text("LOW", size=14, color=PURPLE).move_to([trace_x[0], 1.55, 0])
-        mid_marker = make_text("MID", size=14, color=PINK).move_to([trace_x[3], 1.55, 0])
-        high_marker = make_text("HIGH", size=14, color=PURPLE).move_to([trace_x[6], 1.55, 0])
+
+        marker_mobjects = {}
+
+        def marker_positions(low_index, mid_index, high_index):
+            """Keep distinct markers aligned; stack markers sharing one index."""
+            indices = {"low": low_index, "mid": mid_index, "high": high_index}
+            positions = {}
+            for index in set(indices.values()):
+                occupants = [
+                    name for name in ("low", "mid", "high")
+                    if indices[name] == index
+                ]
+                offsets = {
+                    1: (0.0,),
+                    2: (0.27, -0.27),
+                    3: (0.48, 0.0, -0.48),
+                }[len(occupants)]
+                for name, offset in zip(occupants, offsets):
+                    positions[name] = [trace_x[index], 1.65 + offset, 0]
+            return positions
+
+        def marker_moves(low_index, mid_index, high_index, names=("low", "mid", "high")):
+            positions = marker_positions(low_index, mid_index, high_index)
+            return [
+                marker_mobjects[name].animate.move_to(positions[name])
+                for name in names
+            ]
+
+        initial_marker_positions = marker_positions(0, 3, 6)
+        low_marker = make_text("LOW", size=14, color=PURPLE).move_to(initial_marker_positions["low"])
+        mid_marker = make_text("MID", size=14, color=PINK).move_to(initial_marker_positions["mid"])
+        high_marker = make_text("HIGH", size=14, color=PURPLE).move_to(initial_marker_positions["high"])
+        marker_mobjects.update(low=low_marker, mid=mid_marker, high=high_marker)
         trace_target = make_text("TARGET = 10", size=19, color=PINK).move_to([-3.45, -0.65, 0])
-        trace_state = make_text("low = 0     high = 6     mid = —", size=17, color=DARK)
+        trace_state = make_text("low = 0     high = 6     mid = none", size=17, color=DARK)
         trace_state.move_to([-3.45, -1.35, 0])
         trace_result = make_text("Result: searching...", size=17, color=PURPLE).move_to([-3.45, -2.15, 0])
         current_highlight = code_highlight(0)
 
-        self.play(
+        self.speak(
+            "Now let us slow down and let the code drive every decision. "
+            "Watch the highlighted line, the three markers, and the state below the array.",
+            "robot",
             FadeIn(trace_title), FadeIn(trace_panel),
             FadeIn(trace_cells), FadeIn(trace_indices),
             FadeIn(low_marker), FadeIn(mid_marker), FadeIn(high_marker),
             FadeIn(trace_target), FadeIn(trace_state), FadeIn(trace_result),
             FadeIn(current_highlight), FadeIn(code_group),
-            run_time=1.0,
+            run_time=1.4,
         )
-        self.wait(0.8)
 
-        def focus_code(line_index, *animations, run_time=0.7):
+        def focus_code(narration, line_index, *animations, speaker="robot", run_time=1.0):
             nonlocal current_highlight
             next_highlight = code_highlight(line_index)
-            self.play(
+            self.speak(
+                narration,
+                speaker,
                 Transform(current_highlight, next_highlight),
                 *animations,
                 run_time=run_time,
             )
 
-        # Initialize bounds, calculate mid, then follow the two branch updates.
+        """Legacy rapid trace retained temporarily for scene-edit comparison.
         focus_code(1, run_time=0.55)
         focus_code(2, run_time=0.55)
         focus_code(3, Indicate(trace_cells[3], color=PINK), run_time=0.8)
         self.play(Transform(
             trace_state,
-            make_text("low = 0     high = 6     mid = 3  →  arr[3] = 8", size=16, color=DARK)
+            make_text("low = 0     high = 6     mid = 3  ->  arr[3] = 8", size=16, color=DARK)
                 .move_to(trace_state),
         ), run_time=0.65)
         focus_code(4, run_time=0.45)  # Equality check is false for 8.
@@ -456,7 +563,7 @@ class BinarySearchDemo(Scene):
             low_marker.animate.move_to([trace_x[4], 1.55, 0]),
             Transform(
                 trace_state,
-                make_text("8 < 10  →  low = mid + 1 = 4", size=17, color=DARK)
+                make_text("8 < 10  ->  low = mid + 1 = 4", size=17, color=DARK)
                     .move_to(trace_state),
             ),
             run_time=0.75,
@@ -465,7 +572,7 @@ class BinarySearchDemo(Scene):
         focus_code(3, mid_marker.animate.move_to([trace_x[5], 1.55, 0]), Indicate(trace_cells[5], color=PINK), run_time=0.8)
         self.play(Transform(
             trace_state,
-            make_text("low = 4     high = 6     mid = 5  →  arr[5] = 12", size=16, color=DARK)
+            make_text("low = 4     high = 6     mid = 5  ->  arr[5] = 12", size=16, color=DARK)
                 .move_to(trace_state),
         ), run_time=0.65)
         focus_code(4, run_time=0.45)  # Equality check is false for 12.
@@ -474,7 +581,7 @@ class BinarySearchDemo(Scene):
             high_marker.animate.move_to([trace_x[4], 1.55, 0]),
             Transform(
                 trace_state,
-                make_text("12 > 10  →  high = mid − 1 = 4", size=17, color=DARK)
+                make_text("12 > 10  ->  high = mid - 1 = 4", size=17, color=DARK)
                     .move_to(trace_state),
             ),
             run_time=0.75,
@@ -483,7 +590,7 @@ class BinarySearchDemo(Scene):
         focus_code(3, mid_marker.animate.move_to([trace_x[4], 1.55, 0]), Indicate(trace_cells[4], color=PINK), run_time=0.8)
         self.play(Transform(
             trace_state,
-            make_text("low = high = mid = 4  →  arr[4] = 10", size=16, color=DARK)
+            make_text("low = high = mid = 4  ->  arr[4] = 10", size=16, color=DARK)
                 .move_to(trace_state),
         ), run_time=0.65)
         focus_code(4, run_time=0.6)
@@ -491,19 +598,176 @@ class BinarySearchDemo(Scene):
             trace_cells[4][0].animate.set_fill(PINK, opacity=0.28),
             Transform(
                 trace_result,
-                make_text("return mid → index 4", size=20, color=PURPLE)
+                make_text("return mid -> index 4", size=20, color=PURPLE)
                     .move_to(trace_result),
             ),
             run_time=0.75,
         )
-        self.wait(1.2)
-        self.play(
+        """
+
+        # Initialize bounds, then trace every comparison and branch at voiceover pace.
+        focus_code(
+            "First, low starts at zero: the leftmost index we are still considering.",
+            0,
+            run_time=1.1,
+        )
+        focus_code(
+            "Next, high starts at the final index, six. The whole sorted array is currently in play.",
+            1,
+            run_time=1.1,
+        )
+        focus_code(
+            "The while loop continues only while low is less than or equal to high. "
+            "In other words, while at least one possible index remains.",
+            2,
+            run_time=1.2,
+        )
+        focus_code(
+            "We calculate the middle: zero plus half the distance to six gives index three. "
+            "The value at index three is eight.",
+            3,
+            Indicate(trace_cells[3], color=PINK),
+            Transform(
+                trace_state,
+                make_text("low = 0     high = 6     mid = 3  ->  arr[3] = 8", size=16, color=DARK)
+                    .move_to(trace_state),
+            ),
+            run_time=1.4,
+        )
+        focus_code(
+            "The equality check asks whether eight is our target, ten. It is not, so the search continues.",
+            4,
+            run_time=1.1,
+        )
+        self.speak(
+            "Eight is too small. Does low move past it now?",
+            "student",
+            run_time=0.8,
+        )
+        focus_code(
+            "Yes. Eight is smaller than ten, and the array is sorted, so every value through index three is too small. "
+            "The code moves low to mid plus one: index four.",
+            5,
+            *marker_moves(4, 3, 6, names=("low",)),
+            Transform(
+                trace_state,
+                make_text("8 < 10  ->  low = mid + 1 = 4", size=17, color=DARK)
+                    .move_to(trace_state),
+            ),
+            run_time=1.5,
+        )
+        focus_code(
+            "The loop checks again. Low is four and high is six, so there are still candidates to inspect.",
+            2,
+            run_time=1.1,
+        )
+        focus_code(
+            "The new middle is index five. Its value is twelve.",
+            3,
+            *marker_moves(4, 5, 6, names=("mid",)),
+            Indicate(trace_cells[5], color=PINK),
+            Transform(
+                trace_state,
+                make_text("low = 4     high = 6     mid = 5  ->  arr[5] = 12", size=16, color=DARK)
+                    .move_to(trace_state),
+            ),
+            run_time=1.4,
+        )
+        focus_code(
+            "Twelve is not equal to ten, so again we choose the correct half rather than checking items one by one.",
+            4,
+            run_time=1.1,
+        )
+        self.speak(
+            "Twelve is too large, so high runs back to the left?",
+            "student",
+            run_time=0.8,
+        )
+        focus_code(
+            "Exactly. Because twelve is larger than ten, twelve and everything to its right are too large. "
+            "High becomes mid minus one: index four. LOW and HIGH now stack at index four.",
+            6,
+            *marker_moves(4, 5, 4, names=("low", "high")),
+            Transform(
+                trace_state,
+                make_text("12 > 10  ->  high = mid - 1 = 4", size=17, color=DARK)
+                    .move_to(trace_state),
+            ),
+            run_time=1.5,
+        )
+        focus_code(
+            "The loop continues because low and high are both four. One candidate remains.",
+            2,
+            run_time=1.1,
+        )
+        focus_code(
+            "The middle is now index four. Since low, mid, and high all point there, the labels stack neatly instead of overlapping.",
+            3,
+            *marker_moves(4, 4, 4),
+            Indicate(trace_cells[4], color=PINK),
+            Transform(
+                trace_state,
+                make_text("low = high = mid = 4  ->  arr[4] = 10", size=16, color=DARK)
+                    .move_to(trace_state),
+            ),
+            run_time=1.5,
+        )
+        focus_code(
+            "This time the equality check succeeds: the value at index four is ten, our target.",
+            4,
+            run_time=1.2,
+        )
+        self.speak(
+            "The method returns mid, which is index four. We found ten without checking every value.",
+            "robot",
+            trace_cells[4][0].animate.set_fill(PINK, opacity=0.28),
+            Transform(
+                trace_result,
+                make_text("return mid -> index 4", size=20, color=PURPLE)
+                    .move_to(trace_result),
+            ),
+            run_time=1.3,
+        )
+        scenario_dialogue = self.dialogue_line(
+            "Obscure: Can we try a few more searches?", 17
+        )
+        self.speak(
+            "Can we try a few more searches and see how the steps change?",
+            "student",
             FadeOut(VGroup(
                 trace_title, trace_panel, code_group, current_highlight,
                 trace_cells, trace_indices, low_marker, mid_marker, high_marker,
                 trace_target, trace_state, trace_result,
             )),
+            FadeIn(student, shift=UP * 0.18),
+            FadeIn(robot, shift=UP * 0.18),
+            FadeIn(self.dialogue_box, shift=UP * 0.12),
+            FadeIn(scenario_dialogue, scale=0.92),
             run_time=0.8,
+        )
+        scenario_intro_title = make_heading(
+            "Let's Explore Three Scenarios", size=29, color=DARK
+        ).move_to([0, 3.15, 0])
+        self.play(FadeIn(scenario_intro_title, shift=DOWN * 0.12), run_time=0.5)
+        self.speak(
+            "Absolutely. We'll try an immediate match, a target found after narrowing the range, "
+            "and one that is not in the array.",
+            "robot",
+            Transform(
+                scenario_dialogue,
+                self.dialogue_line(
+                    "Zeno Sensei: Let's try an instant match, a narrowed search, and a miss.",
+                    15,
+                ),
+            ),
+            run_time=0.8,
+        )
+        self.play(
+            FadeOut(Group(
+                scenario_intro_title, student, robot,
+                self.dialogue_box, scenario_dialogue,
+            )),
+            run_time=0.6,
         )
 
         # ----------------------------------------------------
@@ -511,15 +775,19 @@ class BinarySearchDemo(Scene):
         # ----------------------------------------------------
 
         def scenario_card(title_text, target, steps, result_text, result_color=PURPLE):
-            """Show a readable binary-search trace on the same sorted array."""
-            heading = make_text(title_text, size=27, color=DARK).move_to([0, 2.85, 0])
+            """Show each scenario with moving bounds, midpoint, and active range."""
+            heading = make_heading(title_text, size=27, color=DARK).move_to([0, 2.85, 0])
+            scenario_student = create_student().scale_to_fit_height(1.55)
+            scenario_student.move_to([-5.65, -2.45, 0])
+            scenario_robot = create_robot().scale_to_fit_height(1.55)
+            scenario_robot.move_to([5.65, -2.45, 0])
             scenario_values = [2, 4, 6, 8, 10, 12, 14]
             row = VGroup()
             labels = VGroup()
-            positions = [(i - 3) * 0.91 for i in range(7)]
+            cell_x = [(i - 3) * 0.91 for i in range(7)]
 
             for i, value in enumerate(scenario_values):
-                cell, index_label = make_cell(value, i, positions[i])
+                cell, index_label = make_cell(value, i, cell_x[i])
                 row.add(cell)
                 labels.add(index_label)
 
@@ -527,268 +795,190 @@ class BinarySearchDemo(Scene):
             labels.shift(DOWN * 0.15)
 
             target_text = make_text(f"TARGET: {target}", size=21, color=PINK)
-            target_text.move_to([0, 1.45, 0])
+            target_text.move_to([4.55, 0.40, 0])
 
             explanation = make_text(
-                "Begin with the complete sorted array.", size=17, color=DARK
+                "Begin with the complete sorted array.", size=16, color=DARK
             ).move_to([0, -1.05, 0])
-
             counter = make_text("Comparisons: 0", size=18, color=PURPLE)
             counter.move_to([0, -1.75, 0])
 
-            self.play(
+            def marker_positions(low_index, mid_index, high_index):
+                indices = {"low": low_index, "mid": mid_index, "high": high_index}
+                positions = {}
+                for index in set(indices.values()):
+                    occupants = [name for name in ("low", "mid", "high") if indices[name] == index]
+                    offsets = {
+                        1: (0.0,),
+                        2: (0.27, -0.27),
+                        3: (0.48, 0.0, -0.48),
+                    }[len(occupants)]
+                    for name, offset in zip(occupants, offsets):
+                        positions[name] = [cell_x[index], 1.50 + offset, 0]
+                return positions
+
+            low_bound = 0
+            high_bound = len(scenario_values) - 1
+            mid_index = steps[0][0]
+            initial_positions = marker_positions(low_bound, mid_index, high_bound)
+            low_marker = make_text("LOW", size=14, color=PURPLE).move_to(initial_positions["low"])
+            mid_marker = make_text("MID", size=14, color=PINK).move_to(initial_positions["mid"])
+            high_marker = make_text("HIGH", size=14, color=PURPLE).move_to(initial_positions["high"])
+            active_range = make_array_range(
+                row, labels, low_bound, high_bound, LAVENDER
+            )
+
+            if target == 8:
+                opening = (
+                    "First, the best case. The target is eight, which is already at the first middle index, "
+                    "so one comparison should be enough."
+                )
+            elif target == 4:
+                opening = (
+                    "Next, look for four. The first middle is too large, so we will keep the left half "
+                    "and check its middle."
+                )
+            else:
+                opening = (
+                    "Finally, look for eleven, which is not in this array. We will keep narrowing the "
+                    "range until LOW passes HIGH and no candidate remains."
+                )
+
+            opening_text = make_text(opening, size=15, color=DARK).move_to(explanation)
+            self.speak(
+                opening,
+                "robot",
                 FadeIn(heading), FadeIn(row), FadeIn(labels),
-                FadeIn(target_text), FadeIn(explanation), FadeIn(counter),
+                FadeIn(target_text), Transform(explanation, opening_text), FadeIn(counter),
+                FadeIn(low_marker), FadeIn(mid_marker), FadeIn(high_marker),
+                Create(active_range),
+                FadeIn(scenario_student, shift=UP * 0.12),
+                FadeIn(scenario_robot, shift=UP * 0.12),
                 run_time=1.0,
             )
-            self.wait(1.5)
 
-            for comparison, (mid_index, message) in enumerate(steps, start=1):
-                next_explanation = make_text(message, size=17, color=DARK)
-                next_explanation.move_to(explanation)
+            for step_index, (mid_index, message) in enumerate(steps):
+                value = scenario_values[mid_index]
+                next_low, next_high = low_bound, high_bound
+                if value == target:
+                    branch_explanation = (
+                        f"The value {value} equals the target, so we stop after this comparison."
+                    )
+                elif value < target:
+                    next_low = mid_index + 1
+                    branch_explanation = (
+                        f"{value} is below {target}. Since the list is sorted, every value through "
+                        f"index {mid_index} is too small. LOW moves to index {next_low}."
+                    )
+                else:
+                    next_high = mid_index - 1
+                    branch_explanation = (
+                        f"{value} is above {target}. Since the list is sorted, this value and everything "
+                        f"after it are too large. HIGH moves to index {next_high}."
+                    )
 
+                display_explanation = f"{message}\n{branch_explanation}"
+                next_explanation = make_text(
+                    display_explanation, size=14, color=DARK, line_spacing=0.85
+                ).scale_to_fit_width(11.8).move_to(explanation)
                 next_counter = make_text(
-                    f"Comparisons: {comparison}", size=18, color=PURPLE
+                    f"Comparisons: {step_index + 1}", size=18, color=PURPLE
                 ).move_to(counter)
 
-                self.play(
+                next_mid = (
+                    steps[step_index + 1][0]
+                    if value != target and step_index + 1 < len(steps)
+                    else mid_index
+                )
+                next_positions = marker_positions(next_low, next_mid, next_high)
+                marker_animations = [
+                    low_marker.animate.move_to(next_positions["low"]),
+                    mid_marker.animate.move_to(next_positions["mid"]),
+                    high_marker.animate.move_to(next_positions["high"]),
+                ]
+                if next_low <= next_high:
+                    next_range = make_array_range(
+                        row, labels, next_low, next_high, PINK
+                    )
+                    marker_animations.append(Transform(active_range, next_range))
+                else:
+                    marker_animations.append(FadeOut(active_range))
+
+                self.speak(
+                    f"{message} {branch_explanation}",
+                    "robot",
                     Indicate(row[mid_index], color=PINK, scale_factor=1.12),
+                    *marker_animations,
                     Transform(explanation, next_explanation),
                     Transform(counter, next_counter),
                     run_time=1.0,
                 )
-                self.wait(1.7)
+                low_bound, high_bound = next_low, next_high
 
             final_result = make_text(result_text, size=21, color=result_color)
             final_result.move_to([0, -2.55, 0])
-
-            self.play(FadeIn(final_result, scale=0.9), run_time=0.8)
-            self.wait(2.2)
+            self.speak(
+                result_text,
+                "robot",
+                FadeIn(final_result, scale=0.9),
+                run_time=0.8,
+            )
 
             self.play(
-                FadeOut(VGroup(
-                    heading, row, labels, target_text,
-                    explanation, counter, final_result
+                FadeOut(Group(
+                    heading, row, labels, target_text, explanation, counter,
+                    final_result, low_marker, mid_marker, high_marker, active_range,
+                    scenario_student, scenario_robot,
                 )),
                 run_time=0.8,
             )
 
         # Best case: the first midpoint is exactly the target.
         scenario_card(
-            "Scenario 1 — Best Case: Found Immediately",
+            "Scenario 1 - Best Case: Found Immediately",
             8,
-            [(3, "Middle index is 3. The value is 8 — it matches the target!")],
-            "FOUND after 1 comparison • Best case: O(1)",
+            [(3, "Middle index 3 has value 8.")],
+            "FOUND after 1 comparison - Best case: O(1)",
         )
 
         # Early success: target is found after moving into the left half.
         scenario_card(
-            "Scenario 2 — Early Success",
+            "Scenario 2 - Early Success",
             4,
             [
-                (3, "Check index 3: value 8. It is greater than 4, so keep the left half."),
-                (1, "Check index 1: value 4. It matches the target!"),
+                (3, "Check index 3: value 8."),
+                (1, "Check index 1: value 4."),
             ],
             "FOUND after 2 comparisons",
         )
 
         # Unsuccessful search: demonstrate the range becoming empty.
         scenario_card(
-            "Scenario 3 — Unsuccessful Search",
+            "Scenario 3 - Unsuccessful Search",
             11,
             [
-                (3, "Check index 3: value 8. It is smaller than 11, so search right."),
-                (5, "Check index 5: value 12. It is larger than 11, so search left."),
-                (4, "Check index 4: value 10. It is smaller than 11; the range becomes empty."),
+                (3, "Check index 3: value 8."),
+                (5, "Check index 5: value 12."),
+                (4, "Check index 4: value 10."),
             ],
-            "NOT FOUND • The search range is empty",
+            "NOT FOUND - The search range is empty",
             result_color=PINK,
         )
 
-        # Bring the characters and dialogue back for the recap.
+        # Move straight from the scenarios into time complexity.
         self.play(
-            FadeIn(student), FadeIn(robot), FadeIn(self.dialogue_box),
-            FadeIn(dialogue), run_time=0.9,
-        )
-        self.wait(1.0)
-
-        # ----------------------------------------------------
-        # Recap, prerequisite, and efficiency
-        # ----------------------------------------------------
-        self.speak(
-            "Let's recap. Start with a sorted list. Set low to the first index and high to the last index. "
-            "Find the middle index, then compare its value with the target.",
-            "robot",
-            Transform(dialogue, self.dialogue_line("Robot: Sorted list. Find the middle. Compare.", 16)),
-            run_time=0.7,
-        )
-        self.speak(
-            "If the middle value is the target, we are done. If it is too small, search the right half. "
-            "If it is too large, search the left half. Repeat until we find the target or the search range becomes empty.",
-            "robot",
-            run_time=0.7,
-        )
-        self.speak(
-            "And remember, binary search only works correctly when the data is sorted. "
-            "If the list is not sorted, we must sort it first or use a different search method.",
-            "robot",
-            run_time=0.7,
-        )
-        self.speak(
-            "One last cool fact: binary search has logarithmic time complexity, written as big O of log n. "
-            "That means even when the list becomes much larger, the number of comparisons grows very slowly, "
-            "because we cut the remaining search space roughly in half each time.",
-            "robot",
-            Transform(dialogue, self.dialogue_line("Robot: Time complexity — O(log n)!", 18)),
-            run_time=0.7,
-        )
-        self.speak(
-            "I get it now! Instead of checking every item, we keep eliminating half of the possibilities. "
-            "Thanks for teaching me!",
-            "student",
-            Transform(dialogue, self.dialogue_line("Chibi: That makes sense. Thank you!", 17)),
-            run_time=0.7,
-        )
-        self.speak(
-            "You're welcome! Remember: sorted data, check the middle, and eliminate half. "
-            "That's binary search! See you in the next lesson.",
-            "robot",
-            Transform(dialogue, self.dialogue_line("Robot: Sorted. Middle. Eliminate half!", 17)),
-            run_time=0.7,
-        )
-
-        # ----------------------------------------------------
-        # When binary search is the right tool
-        # ----------------------------------------------------
-        self.play(
-            FadeOut(Group(
-                title, subtitle, student, robot, self.dialogue_box, dialogue,
-                cells, index_labels, target_group, low, high, mid,
-                active_range, success
-            ), shift=DOWN * 0.15),
+            FadeOut(Group(title, subtitle, student, robot, self.dialogue_box, dialogue,
+                          cells, index_labels, target_group, low, high, mid,
+                          active_range, success)),
             run_time=0.8,
         )
 
-        def section_title(text):
-            heading = make_text(text, size=34, color=DARK)
-            heading.move_to([0, 3.15, 0])
-            underline = Line(LEFT * 2.0, RIGHT * 2.0, color=PINK, stroke_width=4)
-            underline.next_to(heading, DOWN, buff=0.12)
-            return VGroup(heading, underline)
-
-        use_title = section_title("When Should We Use Binary Search?")
-        use_intro = make_text(
-            "It is especially useful when the data is sorted and we need fast lookups.",
-            size=19, color=PURPLE
-        ).move_to([0, 2.25, 0])
-
-        use_cards = VGroup()
-        use_items = [
-            ("SORTED DATA", "Searching a sorted array or list repeatedly."),
-            ("LARGE DATASETS", "Finding an item without scanning every element."),
-            ("FAST LOOKUPS", "Searching names, IDs, scores, or timestamps in order."),
-            (
-                "ANSWER-SPACE SEARCH",
-                "Finding the smallest or largest value that\nsatisfies a monotonic condition.",
-            ),
-        ]
-
-        card_positions = [
-            (-3.15, 0.95), (3.15, 0.95),
-            (-3.15, -1.05), (3.15, -1.05)
-        ]
-
-        for (heading, body), (x, y) in zip(use_items, card_positions):
-            card = RoundedRectangle(
-                width=5.55, height=1.45, corner_radius=0.16,
-                stroke_color=LAVENDER, stroke_width=2,
-                fill_color=WHITE, fill_opacity=1
-            ).move_to([x, y, 0])
-
-            h = make_text(heading, size=18, color=PURPLE)
-            h.move_to(card.get_top() + DOWN * 0.35)
-
-            b = make_text(body, size=15, color=DARK, line_spacing=0.9)
-            b.move_to(card.get_center() + DOWN * 0.18)
-
-            use_cards.add(VGroup(card, h, b))
-
-        self.play(FadeIn(use_title), FadeIn(use_intro), run_time=0.6)
-        self.play(
-            LaggedStart(
-                *[FadeIn(card, shift=UP * 0.12) for card in use_cards],
-                lag_ratio=0.12
-            ),
-            run_time=1.2
-        )
-        self.wait(2.0)
-
         # ----------------------------------------------------
-        # Advantages and limitations
-        # ----------------------------------------------------
-        pros_title = section_title("Advantages & Disadvantages")
-
-        pros_panel = RoundedRectangle(
-            width=5.8, height=4.45, corner_radius=0.18,
-            stroke_color=PURPLE, stroke_width=2.2,
-            fill_color=WHITE, fill_opacity=1
-        ).move_to([-3.15, -0.15, 0])
-
-        cons_panel = RoundedRectangle(
-            width=5.8, height=4.45, corner_radius=0.18,
-            stroke_color=PINK, stroke_width=2.2,
-            fill_color=WHITE, fill_opacity=1
-        ).move_to([3.15, -0.15, 0])
-
-        pros_heading = make_text("PROS", size=23, color=PURPLE)
-        pros_heading.move_to(pros_panel.get_top() + DOWN * 0.42)
-
-        cons_heading = make_text("CONS", size=23, color=PINK)
-        cons_heading.move_to(cons_panel.get_top() + DOWN * 0.42)
-
-        pros_lines = [
-            "• Very fast: O(log n) time",
-            "• Eliminates about half the range",
-            "• Iterative version uses O(1) space",
-            "• Excellent for repeated lookups",
-        ]
-
-        cons_lines = [
-            "• Data must be sorted first",
-            "• Sorting first can cost O(n log n)",
-            "• Slow on linked lists (no fast indexing)",
-            "• Sorted-array inserts/deletes can cost O(n)",
-        ]
-
-        pros_text = VGroup(*[
-            make_text(line, size=16, color=DARK)
-            for line in pros_lines
-        ]).arrange(DOWN, aligned_edge=LEFT, buff=0.42)
-        pros_text.move_to(pros_panel.get_center() + DOWN * 0.18)
-
-        cons_text = VGroup(*[
-            make_text(line, size=16, color=DARK)
-            for line in cons_lines
-        ]).arrange(DOWN, aligned_edge=LEFT, buff=0.42)
-        cons_text.move_to(cons_panel.get_center() + DOWN * 0.18)
-
-        self.play(
-            FadeOut(VGroup(use_title, use_intro, use_cards)),
-            FadeIn(pros_title),
-            run_time=0.7
-        )
-
-        self.play(
-            FadeIn(pros_panel), FadeIn(cons_panel),
-            FadeIn(pros_heading), FadeIn(cons_heading),
-            FadeIn(pros_text), FadeIn(cons_text),
-            run_time=0.9
-        )
-        self.wait(2.2)
-
-                # ----------------------------------------------------
         # Time complexity: demonstrate repeated halving
         # ----------------------------------------------------
+        def section_title(text):
+            return make_heading(text, size=30, color=DARK).move_to([0, 3.15, 0])
+
         complexity_title = section_title("Why Is the Time Complexity O(log n)?")
 
         explanation = make_text(
@@ -797,15 +987,24 @@ class BinarySearchDemo(Scene):
         ).move_to([0, 2.25, 0])
 
         self.play(
-            FadeOut(VGroup(pros_title, pros_panel, cons_panel, pros_heading,
-                           cons_heading, pros_text, cons_text)),
             FadeIn(complexity_title), FadeIn(explanation),
             run_time=0.9,
         )
-        self.wait(1.8)
+        self.speak(
+            "Now let's see why the number of comparisons grows so slowly. Imagine a sorted array with sixteen possible values. We'll follow the candidates through each iteration.",
+            "robot",
+        )
 
         remaining_counts = [16, 8, 4, 2, 1]
         halving_rows = VGroup()
+
+        halving_narration = [
+            "We start with sixteen possible values. That's our whole search space.",
+            "After the first comparison, at most eight candidates remain. One check lets us keep just the half that could contain the target.",
+            "We don't start over; we check the middle of those eight. After the second comparison, at most four candidates remain.",
+            "Same idea again: four possibilities become at most two.",
+            "After the fourth comparison, at most one candidate remains. If it hasn't matched yet, we check that final value.",
+        ]
 
         for step, count in enumerate(remaining_counts):
             label = make_text(
@@ -823,7 +1022,7 @@ class BinarySearchDemo(Scene):
             )
 
             count_label = make_text(
-                f"{count} possible value(s)",
+                f"{count} possible candidates",
                 size=15,
                 color=DARK
             )
@@ -835,62 +1034,37 @@ class BinarySearchDemo(Scene):
         halving_rows.scale_to_fit_width(11.8)
         halving_rows.move_to([0, -0.15, 0])
 
-        for row in halving_rows:
-            self.play(
+        for step, row in enumerate(halving_rows):
+            self.speak(
+                halving_narration[step],
+                "robot",
                 FadeIn(row, shift=RIGHT * 0.12),
-                run_time=0.65
+                run_time=0.65,
             )
-            self.wait(1.0)
 
         time_reason = make_text(
-            "16 → 8 → 4 → 2 → 1: each comparison removes about half the candidates.",
+            "16 -> 8 -> 4 -> 2 -> 1: each check roughly halves candidates.",
             size=16, color=DARK
         ).move_to([0, -2.35, 0])
 
-        time_formula = MathTex(
-            r"2^k \geq n \quad\Rightarrow\quad k \approx \log_2(n)",
-            color=PURPLE
-        ).scale(0.82).move_to([0, -2.95, 0])
+        # Use native text so this lesson can render without a LaTeX installation.
+        time_formula = make_text(
+            "2^k >= n   so   k is about log2(n) halvings", size=27, color=PURPLE
+        ).scale_to_fit_width(11.8).move_to([0, -2.95, 0])
 
         self.play(
             FadeIn(time_reason),
             Write(time_formula),
             run_time=1.0
         )
-        self.wait(3.0)
-
-        # Explain best case versus worst case.
-        case_summary = VGroup(
-            make_text("BEST CASE", size=19, color=PURPLE),
-
-            make_text(
-                "The first middle value is the target: 1 comparison → O(1).",
-                size=16, color=DARK
-            ),
-
-            make_text("WORST CASE", size=19, color=PINK),
-
-            make_text(
-                "The target is found only after repeatedly halving, or is absent. "
-                "We continue until one candidate remains or the range is empty → O(log n).",
-                size=15, color=DARK
-            ),
-        ).arrange(DOWN, buff=0.18, aligned_edge=LEFT)
-
-        case_summary.scale_to_fit_width(11.7)
-        case_summary.move_to([0, -0.05, 0])
-
-        self.play(
-            FadeOut(VGroup(
-                explanation,
-                halving_rows,
-                time_reason,
-                time_formula
-            )),
-            FadeIn(case_summary),
-            run_time=0.9,
+        self.speak(
+            "Each round halves the remaining search. Doubling the array adds only about one more halving step. "
+            "A final candidate may still need checking, but the growth remains logarithmic: O of log n.",
+            "robot",
+            Indicate(halving_rows, color=PURPLE),
+            Indicate(time_formula, color=PINK),
+            run_time=2.0,
         )
-        self.wait(3.0)
 
         # ----------------------------------------------------
         # Space complexity: show the variables that occupy memory
@@ -935,10 +1109,9 @@ class BinarySearchDemo(Scene):
             color=DARK
         ).move_to([0, -0.7, 0])
 
-        space_formula = MathTex(
-            r"\text{constant number of variables}\quad\Rightarrow\quad O(1)",
-            color=PINK
-        ).scale(0.78).move_to([0, -1.55, 0])
+        space_formula = make_text(
+            "constant number of variables means O(1)", size=27, color=PINK
+        ).scale_to_fit_width(11.8).move_to([0, -1.55, 0])
 
         recursion_note = make_text(
             "No new array and no recursive call stack in this iterative version.",
@@ -947,14 +1120,20 @@ class BinarySearchDemo(Scene):
         ).move_to([0, -2.35, 0])
 
         self.play(
-            FadeOut(VGroup(complexity_title, case_summary)),
+            FadeOut(VGroup(
+                complexity_title, explanation, halving_rows, time_reason, time_formula
+            )),
             FadeIn(space_title),
             FadeIn(array_label),
             FadeIn(memory_array),
             run_time=1.0,
         )
 
-        self.wait(1.5)
+        self.speak(
+            "The input array already exists, so we are measuring the extra memory used by the search. "
+            "The array itself is not copied.",
+            "robot",
+        )
 
         self.play(
             LaggedStart(
@@ -968,7 +1147,11 @@ class BinarySearchDemo(Scene):
             run_time=1.0,
         )
 
-        self.wait(1.8)
+        self.speak(
+            "The algorithm keeps only three indices: low, high, and mid. Their number stays the same "
+            "whether the array has seven items or seven million.",
+            "robot",
+        )
 
         self.play(
             Write(space_formula),
@@ -976,7 +1159,11 @@ class BinarySearchDemo(Scene):
             run_time=1.0
         )
 
-        self.wait(3.0)
+        self.speak(
+            "Because this is iterative, it creates no recursive call stack and no additional array. "
+            "The extra space is constant, O of one.",
+            "robot",
+        )
 
         complexity_footer = make_text(
             "Iterative binary search: best time O(1), worst time O(log n), "
@@ -990,10 +1177,14 @@ class BinarySearchDemo(Scene):
             run_time=0.7
         )
 
-        self.wait(2.0)
+        self.speak(
+            "To summarize, iterative binary search takes O of log n time in the worst case and O of one "
+            "extra space. Next, let's read the complete Java implementation.",
+            "robot",
+        )
 
         # ----------------------------------------------------
-        # Complete Java implementation — split across two pages
+        # Complete Java implementation - split across two pages
         # ----------------------------------------------------
         java_code_pages = [
             [
@@ -1053,7 +1244,7 @@ class BinarySearchDemo(Scene):
 
             code_text = Text(
                 "\n".join(lines),
-                font="DejaVu Sans Mono",
+                font="Consolas",
                 font_size=17,
                 line_spacing=0.78,
                 color=DARK,
@@ -1065,7 +1256,7 @@ class BinarySearchDemo(Scene):
             code_text.move_to(code_panel.get_center())
 
             page_label = make_text(
-                "Complete iterative binary search • Java",
+                "Complete iterative binary search - Java",
                 size=14,
                 color=PURPLE
             ).move_to([0, -3.45, 0])
@@ -1104,16 +1295,109 @@ class BinarySearchDemo(Scene):
                 run_time=0.8
             )
 
-            # Longer reading time for the Java implementation.
-            self.wait(5.0)
+            if page_index == 0:
+                page_narration = (
+                    "LOW and HIGH bound the active range. While it is nonempty, we check MID and move one "
+                    "bound inward. The midpoint formula avoids integer overflow."
+                )
+            else:
+                page_narration = (
+                    "If no match is found, the method returns minus one. Here we search a sorted array for "
+                    "ten and get index four. The input must be sorted for the decisions to work."
+                )
+            self.speak(page_narration, "robot")
 
             code_title_prev = code_title
             code_panel_prev = code_panel
             code_text_prev = code_text
             page_label_prev = page_label
 
-        # The complete Java implementation is the final section of the video.
-        # Leave the second page visible long enough for viewers to read it.
-        self.wait(3.0)
+        closing_dialogue_box = RoundedRectangle(
+            width=8.35, height=0.78, corner_radius=0.18,
+            stroke_color=PURPLE, stroke_width=2.2,
+            fill_color=WHITE, fill_opacity=1,
+        ).move_to([0, -3.28, 0])
+        self.dialogue_box = closing_dialogue_box
+        closing_dialogue = make_text(
+            "Obscure: Thank you, Zeno Sensei, for helping me understand binary search!",
+            size=15,
+            color=DARK,
+        ).scale_to_fit_width(7.95).move_to(closing_dialogue_box)
+
+        self.speak(
+            "Thank you, Zeno Sensei, for helping me understand binary search! "
+            "Now I see how checking the middle helps us narrow down the search.",
+            "student",
+            FadeOut(VGroup(
+                code_title_prev, code_panel_prev, code_text_prev, page_label_prev
+            )),
+            FadeIn(title),
+            FadeIn(subtitle),
+            FadeIn(student, shift=UP * 0.18),
+            FadeIn(robot, shift=UP * 0.18),
+            FadeIn(closing_dialogue_box, shift=UP * 0.12),
+            FadeIn(closing_dialogue, scale=0.92),
+            run_time=0.9,
+        )
+        self.speak(
+            "You're welcome, Obscure! Keep practicing, and you'll be a binary search expert in no time.",
+            "robot",
+            Transform(
+                closing_dialogue,
+                self.dialogue_line(
+                    "Zeno Sensei: You're welcome! Keep practicing, Obscure.", 16
+                ),
+            ),
+            robot.animate.shift(UP * 0.08),
+            run_time=0.8,
+        )
+
+        # Close with the creator's subscribe artwork and a spoken call to action.
+        outro_image = ImageMobject(
+            str(SUBSCRIBE_IMAGE),
+            scale_to_resolution=1080,
+            resampling_algorithm=RESAMPLING_ALGORITHMS["bicubic"],
+        )
+        outro_image.scale_to_fit_height(4.85).move_to([-3.6, -0.05, 0])
+
+        outro_title = make_heading(
+            "Keep learning with me!", size=30, color=DARK
+        ).move_to([2.0, 1.35, 0])
+        outro_actions = make_heading(
+            "LIKE   SHARE   SUBSCRIBE", size=21, color=PURPLE
+        ).move_to([2.0, 0.35, 0])
+        outro_message = make_text(
+            "More coding concepts, explained one step at a time.",
+            size=18,
+            color=DARK,
+        ).move_to([2.0, -0.55, 0])
+        outro_thanks = make_text(
+            "Thanks for learning with us!", size=18, color=PINK
+        ).move_to([2.0, -1.35, 0])
+
+        self.speak(
+            "If you enjoyed learning binary search with us, please like and share this video, "
+            "and subscribe if you want to learn more coding concepts with me. We will keep "
+            "breaking each idea down one step at a time. Thanks for learning with us!",
+            "student",
+            FadeOut(Group(
+                title, subtitle, student, robot,
+                closing_dialogue_box, closing_dialogue,
+            )),
+            FadeIn(outro_image, scale=0.92),
+            FadeIn(outro_title, shift=UP * 0.12),
+            FadeIn(outro_actions, shift=UP * 0.08),
+            FadeIn(outro_message),
+            FadeIn(outro_thanks),
+            run_time=0.9,
+        )
+        self.speak(
+            "Thanks for watching!",
+            "student",
+            FadeOut(Group(
+                outro_image, outro_title, outro_actions, outro_message, outro_thanks
+            )),
+            run_time=0.8,
+        )
 
         

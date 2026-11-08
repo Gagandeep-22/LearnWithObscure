@@ -17,6 +17,14 @@ edge cases, code, and complexity analysis when shaping a lesson. Improve the
 hook, clarity, and pacing without stripping the topic down to only a short
 visual demonstration.
 
+## Recurring characters
+
+The chibi learner is **Obscure** and the AI robot mentor is **Zeno Sensei**. Their
+reusable personalities, dialogue style, and teaching rhythm live in
+`CHARACTERS.md`. Use that file whenever creating or revising a learning video.
+Obscure is curious and asks the audience's “why” and “how” questions; Zeno Sensei
+is calm, clear, and gently playful without talking down to him.
+
 ## Current focus: binary search video
 
 The first video is a complete animated introduction to binary search. The
@@ -43,17 +51,17 @@ mobile-size screens and keep text inside its cards and panels.
 
 ## Dialogue and voiceover status
 
-The animation is currently a silent content-first cut. The `speak()` helper
-uses its animation arguments and adds a short reading pause, but it does not
-play the narration string as audio. Dialogue captions are short summaries of
-the intended character lines.
+The scene uses Gemini voiceover through `manim-voiceover[gemini]`. Its `speak()`
+helper selects a distinct voice for Obscure and Zeno Sensei, runs the animation during
+the spoken explanation, and holds the beat until the audio finishes. The Java
+walkthrough is deliberately line-by-line and includes voiceover for every code
+decision and bound update.
 
-The creator plans to add AI-generated voice dialogues later, after the visuals
-are complete. Do not assume the current fixed pauses are final voiceover timing.
-When adding voiceover, align each audio clip to the corresponding animation
-beat, preserve enough reading time for on-screen text, and keep generated audio
-out of source code. The project already includes the `manim-voiceover[gemini]`
-dependency.
+Set `GEMINI_API_KEY` (or `GOOGLE_API_KEY`) in the ignored `.env` file before
+rendering. Generated audio is cached under `media/` and must remain out of
+source control. Dialogue captions stay short for mobile readability; automatic
+voiceover subtitles are disabled because they would overlap the in-scene caption
+card and code-trace state text.
 
 ## Recent decisions and fixes
 
@@ -96,7 +104,7 @@ From the repository root:
 
 ```powershell
 uv sync
-uv run manim -pql src/learnwithobscure/scenes/binary_search_complete.py BinarySearchDemo
+uv run manim --disable_caching -pql src/learnwithobscure/scenes/binary_search_complete.py BinarySearchDemo
 ```
 
 Use `-pqh` for a higher-quality preview render. The introductory scene is:
