@@ -1,10 +1,10 @@
 import hashlib
+import os
 from pathlib import Path
-import shutil
-import subprocess
 import wave
 
 from manim import *
+from manim_voiceover.services.gemini import GeminiService
 
 
 # Render this scene with --disable_caching to preserve all narration sounds.
@@ -29,6 +29,8 @@ ASSET_DIR = PROJECT_ROOT / "assets" / "characters"
 STUDENT_IMAGE = ASSET_DIR / "student_chibi.png"
 ROBOT_IMAGE = ASSET_DIR / "robot_mentor.png"
 SUBSCRIBE_IMAGE = ASSET_DIR / "Chibi Creator\u2019s Subscribe Moment.png"
+GEMINI_TTS_MODEL = "gemini-3.1-flash-tts-preview"
+GEMINI_VOICES = {"student": "Achird", "robot": "Leda"}
 
 
 def make_text(content, size=24, color=DARK, font="Arial", **kwargs):
@@ -114,34 +116,36 @@ def make_array_range(cells, index_labels, low_index, high_index, color):
 
 # ============================================================
 # LEARN WITH OBSCURE - FULL BINARY SEARCH LESSON
-# Dialogue audio is synthesized locally; no API key is required.
+# Narration uses Gemini TTS; set GEMINI_API_KEY before rendering.
 # Render from the project root:
-# uv run manim --disable_caching -pqh src/learnwithobscure/scenes/binary_search_complete.py BinarySearchDemo
+# uv run manim --disable_caching -p -qk src/learnwithobscure/scenes/binary_search_complete.py BinarySearchDemo
 # ============================================================
 
 class BinarySearchDemo(Scene):
     """A narrated, character-led introduction to binary search."""
 
     def make_narration_audio(self, narration, speaker):
-        """Synthesize cached offline narration with FFmpeg's libflite filter."""
-        ffmpeg = shutil.which("ffmpeg")
-        if ffmpeg is None:
-            raise FileNotFoundError("FFmpeg is required for offline narration.")
+        """Generate and cache Gemini speech for one dialogue beat."""
+        if not os.getenv("GEMINI_API_KEY"):
+            raise RuntimeError(
+                "GEMINI_API_KEY is not set. Add a valid Gemini API key before rendering."
+            )
+
         audio_dir = PROJECT_ROOT / "media" / "audio_files" / "binary_search_demo"
         audio_dir.mkdir(parents=True, exist_ok=True)
-        voice = "slt" if speaker == "student" else "kal"
-        cache_key = hashlib.sha256(f"{voice}:{narration}".encode("utf-8")).hexdigest()[:20]
+        voice = GEMINI_VOICES.get(speaker, GEMINI_VOICES["robot"])
+        cache_key = hashlib.sha256(
+            f"{GEMINI_TTS_MODEL}:{voice}:{narration}".encode("utf-8")
+        ).hexdigest()[:20]
         audio_path = audio_dir / f"{cache_key}.wav"
         if not audio_path.exists():
-            text_path = audio_dir / f"{cache_key}.txt"
-            text_path.write_text(narration, encoding="utf-8")
-            subprocess.run(
-                [ffmpeg, "-hide_banner", "-loglevel", "error", "-y",
-                 "-f", "lavfi", "-i", f"flite=textfile={text_path.name}:voice={voice}",
-                 "-ac", "1", "-ar", "24000", "-c:a", "pcm_s16le", str(audio_path)],
-                cwd=audio_dir,
-                check=True,
+            service = GeminiService(voice=voice, model=GEMINI_TTS_MODEL)
+            result = service.generate_from_text(
+                narration,
+                cache_dir=audio_dir,
+                path=audio_path.name,
             )
+            audio_path = audio_dir / result["original_audio"]
         with wave.open(str(audio_path), "rb") as audio_file:
             return audio_path, audio_file.getnframes() / audio_file.getframerate()
 
@@ -159,6 +163,11 @@ class BinarySearchDemo(Scene):
         return make_text(text, size=size, color=DARK).move_to(self.dialogue_box)
 
     def construct(self):
+        if not os.getenv("GEMINI_API_KEY"):
+            raise RuntimeError(
+                "GEMINI_API_KEY is not set. Add a valid Gemini API key before rendering."
+            )
+
         self.camera.background_color = BG
 
         # ----------------------------------------------------
