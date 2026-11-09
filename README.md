@@ -6,32 +6,64 @@ Animated programming explainers made with Manim.
 
 Install the project dependencies with `uv sync`.
 
-Set a valid `GEMINI_API_KEY` in the environment before rendering. Keep the key
-local and never commit it. Check access to both narration voices with:
+Set `GEMINI_API_KEY` in your local environment or ignored `.env` file.
+Keep the key local and never commit it.
+
+## Prepare Binary Search narration
+
+Generate missing narration audio separately from the animation render:
+
+```powershell
+uv run python scripts/prepare_binary_search_audio.py
+```
+
+The preparation command walks the Binary Search scene, reuses existing WAV
+files, and generates only missing clips. It defaults to at most **8 new TTS
+requests per run** so there is headroom under a 10-request free-tier daily
+limit. If clips remain, run it again after the quota resets. Use
+`--max-new 5` to set a smaller limit.
+
+This command does not render video. It saves audio persistently under
+`media/audio_files/binary_search_demo/`.
+
+The legacy preflight command is now a local configuration check only:
 
 ```powershell
 uv run python scripts/preflight_gemini.py
 ```
 
+It does not contact Gemini, validate the key, or consume request quota.
+
 ## Render a scene
 
-Run these commands from the project root:
+Once narration preparation has completed, render the Binary Search scene:
 
 ```powershell
-uv run manim --disable_caching -pqk src/learnwithobscure/scenes/binary_search_complete.py BinarySearchDemo
-uv run manim -pql src/learnwithobscure/scenes/first_animation.py HelloLearn
+uv run manim --disable_caching -pql src/learnwithobscure/scenes/binary_search_complete.py BinarySearchDemo
 ```
 
-The binary-search scene uses Manim's 4K/60 fps `-qk` preset. Manim writes
-rendered videos, cached animations, and generated voiceover files under `media/`.
-Disable caching for the binary-search scene so cached animations don't skip
-voiceover audio.
+Use `-pqh` for a higher-quality preview or `-pqk` for the 4K/60 fps final
+preset. The scene checks its persistent audio cache before requiring an API
+key, so a fully cached render can run without making Gemini requests. If any
+clip is still missing, the render reports that the API key is needed; run the
+audio preparation command first.
+
+Keep `--disable_caching` for this scene because cached Manim animations can
+otherwise skip voiceover audio. This flag controls Manim animation caching; it
+does not disable the separate WAV audio cache.
+
+The introductory scene is:
+
+```powershell
+uv run manim -pql src/learnwithobscure/scenes/first_animation.py HelloLearn
+```
 
 ## Project layout
 
 ```text
-assets/characters/                 Character illustrations
-src/learnwithobscure/               Python package
-src/learnwithobscure/scenes/        Manim scene scripts
-media/                              Generated renders and caches (ignored by Git)
+assets/characters/                  Character illustrations
+src/learnwithobscure/                Python package
+src/learnwithobscure/scenes/         Manim scenes
+scripts/prepare_binary_search_audio.py  Resumable audio preparation
+media/                               Generated renders and audio (ignored by Git)
 ```
