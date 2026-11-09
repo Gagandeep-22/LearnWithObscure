@@ -19,9 +19,12 @@ uv run python scripts/prepare_binary_search_audio.py
 
 The preparation command walks the Binary Search scene, reuses existing WAV
 files, and generates only missing clips. It defaults to at most **8 new TTS
-requests per run** so there is headroom under a 10-request free-tier daily
-limit. If clips remain, run it again after the quota resets. Use
-`--max-new 5` to set a smaller limit.
+requests per run**, with at least **22 seconds between requests** to respect
+the observed 3-requests-per-minute free-tier limit. If clips remain, run it
+again after the quota resets. Use `--max-new 5` to set a smaller request
+budget, or `--min-request-interval 25` for more spacing. If Gemini still
+returns a quota or transient error, the script stops cleanly; completed WAV
+files remain cached and can be resumed later.
 
 This command does not render video. It saves audio persistently under
 `media/audio_files/binary_search_demo/`.
