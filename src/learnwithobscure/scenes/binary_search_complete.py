@@ -132,6 +132,8 @@ class BinarySearchDemo(Scene):
         self.audio_prepare_mode = os.getenv("LWO_AUDIO_PREPARE_ONLY") == "1"
         self.audio_prepare_max_new = int(os.getenv("LWO_AUDIO_PREPARE_MAX_NEW", "8"))
         self.audio_prepare_generated = 0
+        self.audio_prepare_min_interval = float(os.getenv("LWO_AUDIO_PREPARE_MIN_INTERVAL", "22"))
+        self.audio_prepare_last_request = None
         super().__init__(*args, **kwargs)
 
     def play(self, *args, **kwargs):
@@ -169,7 +171,25 @@ class BinarySearchDemo(Scene):
                     "Set it locally, then rerun audio preparation."
                 )
 
+            # The free tier currently reports a 3-requests/minute limit.
+            # Space request starts to avoid bursting into that limit.
+            if self.audio_prepare_mode and self.audio_prepare_last_request is not None:
+                import time
+
+                elapsed = time.monotonic() - self.audio_prepare_last_request
+                delay = self.audio_prepare_min_interval - elapsed
+                if delay > 0:
+                    print(
+                        f"Waiting {delay:.1f}s to respect the Gemini TTS "
+                        "requests-per-minute limit..."
+                    )
+                    time.sleep(delay)
+
             service = GeminiService(voice=voice, model=GEMINI_TTS_MODEL)
+            if self.audio_prepare_mode:
+                import time
+
+                self.audio_prepare_last_request = time.monotonic()
             result = service.generate_from_text(
                 narration,
                 cache_dir=audio_dir,
