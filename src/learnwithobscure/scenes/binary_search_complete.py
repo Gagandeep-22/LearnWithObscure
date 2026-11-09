@@ -121,16 +121,33 @@ def make_array_range(cells, index_labels, low_index, high_index, color):
 # uv run manim --disable_caching -p -qk src/learnwithobscure/scenes/binary_search_complete.py BinarySearchDemo
 # ============================================================
 
+class AudioPreparationLimitReached(RuntimeError):
+    """Raised before making a TTS request beyond the preparation budget."""
+
+
 class BinarySearchDemo(Scene):
     """A narrated, character-led introduction to binary search."""
 
-    def make_narration_audio(self, narration, speaker):
-        """Generate and cache Gemini speech for one dialogue beat."""
-        if not os.getenv("GEMINI_API_KEY"):
-            raise RuntimeError(
-                "GEMINI_API_KEY is not set. Add a valid Gemini API key before rendering."
-            )
+    def __init__(self, *args, **kwargs):
+        self.audio_prepare_mode = os.getenv("LWO_AUDIO_PREPARE_ONLY") == "1"
+        self.audio_prepare_max_new = int(os.getenv("LWO_AUDIO_PREPARE_MAX_NEW", "8"))
+        self.audio_prepare_generated = 0
+        super().__init__(*args, **kwargs)
 
+    def play(self, *args, **kwargs):
+        """Skip visual rendering while the preparation script walks the scene."""
+        if self.audio_prepare_mode:
+            return self
+        return super().play(*args, **kwargs)
+
+    def wait(self, *args, **kwargs):
+        """Skip timeline waits during audio-only preparation."""
+        if self.audio_prepare_mode:
+            return self
+        return super().wait(*args, **kwargs)
+
+    def make_narration_audio(self, narration, speaker):
+        """Return a cached clip or generate it, with cache checks before API checks."""
         audio_dir = PROJECT_ROOT / "media" / "audio_files" / "binary_search_demo"
         audio_dir.mkdir(parents=True, exist_ok=True)
         voice = GEMINI_VOICES.get(speaker, GEMINI_VOICES["robot"])
@@ -138,7 +155,20 @@ class BinarySearchDemo(Scene):
             f"{GEMINI_TTS_MODEL}:{voice}:{narration}".encode("utf-8")
         ).hexdigest()[:20]
         audio_path = audio_dir / f"{cache_key}.wav"
-        if not audio_path.exists():
+
+        # Cached narration is always usable, even when no API key is configured.
+        if not audio_path.is_file() or audio_path.stat().st_size == 0:
+            if self.audio_prepare_mode and self.audio_prepare_generated >= self.audio_prepare_max_new:
+                raise AudioPreparationLimitReached(
+                    f"Reached the preparation limit of {self.audio_prepare_max_new} new clips. "
+                    "Run the command again after the quota resets; existing clips will be reused."
+                )
+            if not os.getenv("GEMINI_API_KEY"):
+                raise RuntimeError(
+                    "GEMINI_API_KEY is required only when narration audio is missing. "
+                    "Set it locally, then rerun audio preparation."
+                )
+
             service = GeminiService(voice=voice, model=GEMINI_TTS_MODEL)
             result = service.generate_from_text(
                 narration,
@@ -146,12 +176,18 @@ class BinarySearchDemo(Scene):
                 path=audio_path.name,
             )
             audio_path = audio_dir / result["original_audio"]
+            if self.audio_prepare_mode:
+                self.audio_prepare_generated += 1
+
         with wave.open(str(audio_path), "rb") as audio_file:
-            return audio_path, audio_file.getnframes() / audio_file.getframerate()
+            duration = audio_file.getnframes() / audio_file.getframerate()
+        return audio_path, duration
 
     def speak(self, narration, speaker="robot", *animations, run_time=1.2, **play_kwargs):
-        """Play a quick visual beat, then hold until the spoken line finishes."""
+        """Play narration normally, or generate/cache it without rendering in prep mode."""
         audio_path, speech_duration = self.make_narration_audio(narration, speaker)
+        if self.audio_prepare_mode:
+            return
         self.add_sound(str(audio_path))
         if animations:
             self.play(*animations, run_time=run_time, **play_kwargs)
@@ -163,11 +199,6 @@ class BinarySearchDemo(Scene):
         return make_text(text, size=size, color=DARK).move_to(self.dialogue_box)
 
     def construct(self):
-        if not os.getenv("GEMINI_API_KEY"):
-            raise RuntimeError(
-                "GEMINI_API_KEY is not set. Add a valid Gemini API key before rendering."
-            )
-
         self.camera.background_color = BG
 
         # ----------------------------------------------------

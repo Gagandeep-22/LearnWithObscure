@@ -1,24 +1,22 @@
-from pathlib import Path
-from tempfile import TemporaryDirectory
+"""Check local Gemini TTS configuration without making an API request.
 
-from manim_voiceover.services.gemini import GeminiService
-
-
-VOICES = ("Achird", "Leda")
-MODEL = "gemini-3.1-flash-tts-preview"
-TEST_TEXT = "This is a short Gemini voice readiness check."
+This is intentionally a no-network check: it does not verify the key or consume
+Gemini request quota. Use prepare_binary_search_audio.py to generate missing
+voice clips.
+"""
+import os
 
 
-def main():
-    with TemporaryDirectory() as cache_dir:
-        for voice in VOICES:
-            service = GeminiService(voice=voice, model=MODEL)
-            result = service.generate_from_text(TEST_TEXT, cache_dir=cache_dir)
-            audio_path = Path(cache_dir) / result["original_audio"]
-            if not audio_path.is_file() or audio_path.stat().st_size == 0:
-                raise RuntimeError(f"Gemini did not return valid audio for {voice}.")
-            print(f"{voice}: ready ({audio_path.stat().st_size} bytes of test audio)")
+def main() -> int:
+    if os.getenv("GEMINI_API_KEY"):
+        print("GEMINI_API_KEY is present in this environment.")
+        print("No API request was made; key validity and voice access were not tested.")
+        return 0
+
+    print("GEMINI_API_KEY is not set.")
+    print("Set it locally before generating missing narration clips.")
+    return 1
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
