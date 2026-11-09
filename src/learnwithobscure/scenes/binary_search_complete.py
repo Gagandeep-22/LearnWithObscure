@@ -761,7 +761,7 @@ class BinarySearchDemo(Scene):
             run_time=1.1,
         )
         focus_code(
-            "The middle is now index four. Since low, mid, and high all point there, the labels stack neatly instead of overlapping.",
+            "The middle is now index four.",
             3,
             *marker_moves(4, 4, 4),
             Indicate(trace_cells[4], color=PINK),
@@ -1025,19 +1025,40 @@ class BinarySearchDemo(Scene):
             result_color=PINK,
         )
 
-        # Move straight from the scenarios into time complexity.
+        # ----------------------------------------------------
+        # Complexity overview: state the result before the proof
+        # ----------------------------------------------------
+        def section_title(text):
+            return make_heading(text, size=30, color=DARK).move_to([0, 3.15, 0])
+
+        complexity_overview_title = section_title("Binary Search Complexity")
+        time_complexity = make_heading(
+            "Time Complexity: O(log n)", size=30, color=DARK
+        ).move_to([-2.3, 0.6, 0])
+        space_complexity = make_heading(
+            "Space Complexity: O(1)", size=30, color=DARK
+        ).move_to([2.3, 0.6, 0])
+        complexity_note = make_text(
+            "This iterative version keeps only a few index variables.",
+            size=18,
+            color=PURPLE,
+        ).move_to([0, -0.55, 0])
+
         self.play(
-            FadeOut(Group(title, subtitle, student, robot, self.dialogue_box, dialogue,
-                          cells, index_labels, target_group, low, high, mid,
-                          active_range, success)),
-            run_time=0.8,
+            FadeIn(complexity_overview_title),
+            FadeIn(time_complexity),
+            FadeIn(space_complexity),
+            FadeIn(complexity_note),
+            run_time=0.9,
+        )
+        self.speak(
+            "Let's look at the time and space complexity for this algorithm. The time complexity is O of log n, and the space complexity is O of one. Now let's see why",
+            "robot",
         )
 
         # ----------------------------------------------------
         # Time complexity: demonstrate repeated halving
         # ----------------------------------------------------
-        def section_title(text):
-            return make_heading(text, size=30, color=DARK).move_to([0, 3.15, 0])
 
         complexity_title = section_title("Why Is the Time Complexity O(log n)?")
 
