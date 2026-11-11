@@ -1034,15 +1034,15 @@ class BinarySearchDemo(Scene):
         complexity_overview_title = section_title("Binary Search Complexity")
         time_complexity = make_heading(
             "Time Complexity: O(log n)", size=30, color=DARK
-        ).move_to([-2.3, 0.6, 0])
+        ).move_to([0, 0.9, 0])
         space_complexity = make_heading(
             "Space Complexity: O(1)", size=30, color=DARK
-        ).move_to([2.3, 0.6, 0])
+        ).move_to([0, -0.05, 0])
         complexity_note = make_text(
             "This iterative version keeps only a few index variables.",
             size=18,
             color=PURPLE,
-        ).move_to([0, -0.55, 0])
+        ).move_to([0, -1.1, 0])
 
         self.play(
             FadeIn(complexity_overview_title),
@@ -1068,6 +1068,12 @@ class BinarySearchDemo(Scene):
         ).move_to([0, 2.25, 0])
 
         self.play(
+            FadeOut(VGroup(
+                complexity_overview_title,
+                time_complexity,
+                space_complexity,
+                complexity_note,
+            )),
             FadeIn(complexity_title), FadeIn(explanation),
             run_time=0.9,
         )
