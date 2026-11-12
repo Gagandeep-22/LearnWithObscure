@@ -2,6 +2,10 @@
 
 Animated programming explainers made with Manim.
 
+Use [VIDEO_PRODUCTION_TEMPLATE.md](VIDEO_PRODUCTION_TEMPLATE.md) as the reusable
+story, visual, voiceover, and review guide when planning future videos. Follow
+[CHARACTERS.md](CHARACTERS.md) for Obscure and Zeno Sensei's dialogue style.
+
 ## Setup
 
 Install the project dependencies with `uv sync`.
@@ -36,6 +40,36 @@ uv run python scripts/preflight_gemini.py
 ```
 
 It does not contact Gemini, validate the key, or consume request quota.
+
+## Bubble Sort video
+
+Prepare missing Bubble Sort narration clips separately from the render:
+
+```powershell
+uv run --env-file .env python scripts/prepare_bubble_sort_audio.py
+```
+
+The command reuses cached clips under `media/audio_files/bubble_sort_demo/` and
+generates at most 8 new clips per run, with at least 22 seconds between TTS
+requests. Rerun it to continue if clips remain. Then render a low-quality
+review copy:
+
+```powershell
+uv run --env-file .env manim --disable_caching -pql src/learnwithobscure/scenes/bubble_sort.py BubbleSortDemo
+```
+
+Use `-pqh` for a high-quality preview or `-pqk` for the 4K/60 fps final render.
+Keep `--disable_caching` so Manim does not skip voiceover audio.
+
+To render a silent Bubble Sort video without reading cached audio or contacting
+Gemini, set `LWO_DISABLE_VOICEOVER=1` in PowerShell and choose a separate output
+name:
+
+```powershell
+$env:LWO_DISABLE_VOICEOVER = "1"
+uv run manim --disable_caching -ql -o BubbleSortDemo_silent src/learnwithobscure/scenes/bubble_sort.py BubbleSortDemo
+Remove-Item Env:LWO_DISABLE_VOICEOVER
+```
 
 ## Render a scene
 

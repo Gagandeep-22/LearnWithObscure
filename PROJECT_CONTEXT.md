@@ -2,7 +2,8 @@
 
 This document is a handoff for future work on the project, including work from
 another computer or a fresh assistant session. Read this together with the
-README before changing the scenes.
+README before changing the scenes. Use `VIDEO_PRODUCTION_TEMPLATE.md` as the
+reusable lesson and production blueprint for future videos.
 
 ## Channel and project goal
 
@@ -44,6 +45,16 @@ The current scene covers:
   and a target that is absent.
 - When binary search is useful, its advantages and limitations, time and space
   complexity, and a complete iterative Java implementation.
+
+## Bubble Sort video
+
+The next narrated lesson is `BubbleSortDemo` in
+`src/learnwithobscure/scenes/bubble_sort.py`. It demonstrates adjacent
+compare-and-swap passes on `[5, 1, 4, 2, 8]`, connects the live comparisons to
+Java statements, explains early exit and time/space complexity, and presents
+an optimized in-place Java implementation. Its resumable Gemini audio
+preparation command is `scripts/prepare_bubble_sort_audio.py`; audio is cached
+separately under `media/audio_files/bubble_sort_demo/`.
 
 The visual style uses a lavender background, purple and pink accents, array
 cells, and the student/robot character illustrations. Keep the code legible on
@@ -87,8 +98,10 @@ src/learnwithobscure/                      Python package
 src/learnwithobscure/scenes/               Manim scenes
 src/learnwithobscure/scenes/binary_search_complete.py
                                              Main binary-search lesson
+src/learnwithobscure/scenes/bubble_sort.py    Bubble Sort lesson
 src/learnwithobscure/scenes/first_animation.py
                                              Small introductory scene
+scripts/prepare_bubble_sort_audio.py          Resumable Bubble Sort TTS preparation
 media/                                     Generated renders and caches
 ```
 
