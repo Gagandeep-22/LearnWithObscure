@@ -56,6 +56,24 @@ an optimized in-place Java implementation. Its resumable Gemini audio
 preparation command is `scripts/prepare_bubble_sort_audio.py`; audio is cached
 separately under `media/audio_files/bubble_sort_demo/`.
 
+The visual explanation uses one moving comparison window and completes each
+comparison and swap before moving on. The Java walkthrough is a key part of
+the channel: each highlighted statement must match its visible effect. Fixed
+array slots, `i` and `end` pointers, and `temp` and `swapped` displays follow the
+execution events in `bubble_sort_trace.py`. Show the temporary duplicate values
+between the two array assignments; do not animate both assignments as one swap.
+Short narration clips belong to individual steps rather than an entire pass.
+Explain the first swap fully; later repetitions can use contextual comments
+and readable silent beats, while retaining every statement's animation and
+numeric caption. Avoid repeating narration verbatim. The `swapped` dialogue
+uses the already-sorted second-pass result to explain optional early exit:
+true records a change, while a complete no-swap pass proves sorting is done.
+Removing the flag and its exit check still sorts with all shrinking passes.
+Do not promise fast performance merely because input is nearly sorted.
+Run `uv run python -m unittest discover -s tests -v` to verify the execution
+model. Set `LWO_REVIEW_TIMELINE` to an ignored JSON path under `media/` when
+rendering to record completed steps and frame-review timestamps.
+
 The visual style uses a lavender background, purple and pink accents, array
 cells, and the student/robot character illustrations. Keep the code legible on
 mobile-size screens and keep text inside its cards and panels.
