@@ -11,6 +11,7 @@ from pathlib import Path
 
 import numpy as np
 from manim import *
+from manimpango import list_fonts
 
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
@@ -22,6 +23,13 @@ PURPLE = "#7B3FA1"
 LAVENDER = "#A987C5"
 PINK = "#FF75AC"
 WHITE = "#FFFFFF"
+
+# Use an installed sans serif rather than the platform default.
+_AVAILABLE = {name.casefold(): name for name in list_fonts()}
+FONT = next((_AVAILABLE[name.casefold()] for name in (
+    "Poppins", "Montserrat", "Inter", "Segoe UI", "DejaVu Sans", "Arial",
+    "Liberation Sans", "Noto Sans", "Sans"
+) if name.casefold() in _AVAILABLE), "sans-serif")
 
 PREVIEW = os.getenv("ZENO_PREVIEW") == "1"
 SILENT = os.getenv("ZENO_SILENT") == "1" or (
@@ -45,7 +53,7 @@ def text(value, size=62, width=6.45, height=2.3, color=DARK,
     if wrap:
         value = "\n".join(textwrap.fill(line, width=wrap) for line in value.splitlines())
     obj = Text(value, font_size=size, color=color,
-               weight="BOLD" if bold else "NORMAL", line_spacing=.95)
+               font=FONT, weight="BOLD" if bold else "NORMAL", line_spacing=.95)
     if obj.width > width:
         obj.scale_to_fit_width(width)
     if obj.height > height:
@@ -59,8 +67,8 @@ def headline(value, y=4.95, **kwargs):
 
 def caption(value):
     # Short editorial captions, not a transcript. Keep them in the safe area.
-    return text(value, size=33, width=6.0, height=1.08, bold=False,
-                wrap=35).move_to(at(0, -4.82))
+    return text(value, size=37, width=6.25, height=1.12, bold=True,
+                wrap=31).move_to(at(0, -4.82))
 
 
 def pill(value, color=PURPLE, ink=WHITE):
@@ -100,35 +108,108 @@ def face(points, color, opacity=1):
                    stroke_width=2, fill_color=color, fill_opacity=opacity)
 
 
-def block(u, v, w, d, h, top=PINK):
-    a, b = u+w, v+d
+def block(u, v, w, d, h, top=PINK, base=0):
+    a, b, z = u+w, v+d, base+h
     return VGroup(
-        face([(u,v,0),(a,v,0),(a,v,h),(u,v,h)], LAVENDER),
-        face([(a,v,0),(a,b,0),(a,b,h),(a,v,h)], PURPLE),
-        face([(u,v,h),(a,v,h),(a,b,h),(u,b,h)], top),
+        face([(u,v,base),(a,v,base),(a,v,z),(u,v,z)], LAVENDER),
+        face([(u,v,base),(u,b,base),(u,b,z),(u,v,z)], PURPLE),
+        face([(u,v,z),(a,v,z),(a,b,z),(u,b,z)], top),
     )
 
 
+def iso_line(a, b, color=PURPLE, width=2):
+    return Line(projected(*a), projected(*b), color=color, stroke_width=width)
+
+
 def world(include_walls=True):
-    floor = face([(0,0,0),(4,0,0),(4,4,0),(0,4,0)], WHITE)
-    grid = VGroup(*[
-        Line(projected(i,0), projected(i,4), color=LAVENDER, stroke_width=1.4)
-        for i in (1,2,3)
-    ], *[
-        Line(projected(0,i), projected(4,i), color=LAVENDER, stroke_width=1.4)
-        for i in (1,2,3)
-    ])
+    """Illustrated isometric studio with matching furniture and window."""
+    platform = block(0,0,4,4,.18, WHITE, base=-.18)
     walls = VGroup()
     if include_walls:
         walls.add(
-            face([(0,4,0),(4,4,0),(4,4,2),(0,4,2)], LAVENDER, .42),
-            face([(0,0,0),(0,4,0),(0,4,2),(0,0,2)], BG, .75),
+            face([(0,4,0),(4,4,0),(4,4,2.45),(0,4,2.45)], BG),
+            face([(4,0,0),(4,4,0),(4,4,2.45),(4,0,2.45)], LAVENDER, .52),
+            face([(.55,4,1.1),(2.2,4,1.1),(2.2,4,2.02),(.55,4,2.02)], WHITE),
+            iso_line((1.375,4,1.1),(1.375,4,2.02)),
+            iso_line((.55,4,1.56),(2.2,4,1.56)),
+            face([(4,.65,1.32),(4,1.55,1.32),(4,1.55,2.03),(4,.65,2.03)], WHITE),
         )
-    furniture = VGroup(block(.75,2.8,.9,.7,.9),
-                       block(2.2,2.0,1.0,.85,.55, WHITE),
-                       block(2.7,.7,.55,.55,.8))
-    # Far walls first, then floor and furniture, to keep depth legible.
-    return VGroup(walls, floor, grid, furniture)
+    grid = VGroup(*[
+        iso_line((i,0,0),(i,4,0),LAVENDER,1) for i in (.5,1,1.5,2,2.5,3,3.5)
+    ], *[
+        iso_line((0,i,0),(4,i,0),LAVENDER,1) for i in (.5,1,1.5,2,2.5,3,3.5)
+    ]).set_opacity(.40)
+    rug = VGroup(
+        face([(.65,.65,.015),(2.55,.65,.015),(2.55,2.25,.015),(.65,2.25,.015)], PINK, .58),
+        *[iso_line((.78,i,.025),(2.42,i,.025),WHITE,1.8)
+          for i in (.85,1.1,1.35,1.6,1.85,2.1)]
+    )
+    desk = VGroup(
+        block(2.37,3.02,.13,.63,.66,LAVENDER),
+        block(3.52,3.02,.13,.63,.66,LAVENDER),
+        block(2.32,2.95,1.42,.78,.12,WHITE,base=.66),
+        block(2.90,3.32,.42,.19,.09,DARK,base=.78),
+        block(3.04,3.37,.1,.1,.30,PURPLE,base=.87),
+        face([(2.64,3.37,1.06),(3.53,3.37,1.06),(3.53,3.37,1.64),(2.64,3.37,1.64)],DARK),
+        face([(2.72,3.365,1.14),(3.45,3.365,1.14),(3.45,3.365,1.56),(2.72,3.365,1.56)],BG),
+        *[iso_line((2.83,3.36,z),(3.29,3.36,z),PURPLE,1.6) for z in (1.25,1.35,1.45)],
+        block(2.76,3.03,.66,.24,.035,PINK,base=.78),
+    )
+    sofa = VGroup(
+        block(.27,2.79,1.65,.88,.38,LAVENDER),
+        block(.27,3.5,1.65,.17,.39,PINK,base=.38),
+        block(.27,2.79,.17,.72,.26,PINK,base=.38),
+        block(1.75,2.79,.17,.72,.26,PINK,base=.38),
+        block(.49,2.85,.58,.55,.10,WHITE,base=.38),
+        block(1.09,2.85,.58,.55,.10,WHITE,base=.38),
+    )
+    table = VGroup(
+        block(1.38,1.46,.14,.14,.34,PURPLE),
+        block(2.04,1.46,.14,.14,.34,PURPLE),
+        block(1.35,1.41,.9,.63,.10,WHITE,base=.34),
+        block(1.67,1.62,.36,.23,.05,PINK,base=.44),
+    )
+    plant = VGroup(
+        block(3.20,.52,.46,.46,.42,PINK),
+        iso_line((3.43,.75,.42),(3.43,.75,1.08),PURPLE,3),
+        *[Ellipse(width=.30,height=.52,stroke_width=0,
+                  fill_color=color,fill_opacity=1).rotate(angle).move_to(projected(3.43,.75,z)+RIGHT*dx)
+          for dx,z,angle,color in ((-.13,.77,.65,LAVENDER),(.15,.90,-.65,PURPLE),(0,1.10,0,PINK))]
+    )
+    return VGroup(platform,grid,walls,rug,desk,sofa,table,plant)
+
+
+def flat_studio():
+    back = RoundedRectangle(width=6.0,height=3.9,corner_radius=.18,
+                            stroke_color=PURPLE,stroke_width=3,
+                            fill_color=WHITE,fill_opacity=1)
+    wall = Rectangle(width=5.72,height=2.54,stroke_width=0,
+                     fill_color=BG,fill_opacity=1).move_to(UP*.55)
+    floor = Rectangle(width=5.72,height=1.02,stroke_width=0,
+                      fill_color=LAVENDER,fill_opacity=.23).move_to(DOWN*1.28)
+    window = Rectangle(width=1.65,height=1.23,stroke_color=PURPLE,stroke_width=3,
+                       fill_color=WHITE,fill_opacity=1).move_to([-1.65,.95,0])
+    panes = VGroup(Line(window.get_top(),window.get_bottom(),color=LAVENDER,stroke_width=2),
+                   Line(window.get_left(),window.get_right(),color=LAVENDER,stroke_width=2))
+    couch = VGroup(
+        RoundedRectangle(width=2.33,height=.89,corner_radius=.17,stroke_color=PURPLE,
+                         fill_color=LAVENDER,fill_opacity=1,stroke_width=2),
+        *[RoundedRectangle(width=.86,height=.35,corner_radius=.1,stroke_width=0,
+                          fill_color=WHITE,fill_opacity=1).move_to([x,-.13,0]) for x in (-.46,.46)]
+    ).move_to([-1.47,-.63,0])
+    desk = VGroup(
+        Rectangle(width=2.19,height=.18,stroke_width=0,fill_color=PURPLE,fill_opacity=1),
+        *[Rectangle(width=.12,height=.69,stroke_width=0,fill_color=LAVENDER,fill_opacity=1)
+          .move_to([x,-.37,0]) for x in (-.92,.92)],
+        RoundedRectangle(width=1.30,height=.80,corner_radius=.08,stroke_color=DARK,
+                         stroke_width=4,fill_color=BG,fill_opacity=1).move_to([0,.74,0]),
+        Line([0,.31,0],[0,.10,0],stroke_width=5,color=PURPLE),
+        *[Line([-.43,y,0],[.36,y,0],color=PURPLE,stroke_width=2) for y in (.64,.78,.92)]
+    ).move_to([1.26,-.15,0])
+    rug = Ellipse(width=2.35,height=.48,stroke_width=0,fill_color=PINK,fill_opacity=.70).move_to(DOWN*1.42)
+    art = VGroup(Rectangle(width=.68,height=.67,color=PURPLE,fill_color=WHITE,fill_opacity=1),
+                 Circle(radius=.19,color=PINK,fill_opacity=1,stroke_width=0)).move_to([1.75,1.22,0])
+    return VGroup(back,wall,floor,rug,window,panes,couch,desk,art)
 
 
 class ZenoDailyBrief(Scene):
@@ -234,24 +315,27 @@ class ZenoDailyBrief(Scene):
         return new, ReplacementTransform(previous, new)
 
     def hook(self, segment, episode):
-        brand = headline("ZENO'S DAILY TECH BRIEF", y=6.0, size=27,
-                         height=.42, color=PURPLE)
-        question = headline("WHAT IF AI COULD", y=4.75, size=58, height=1)
-        key = headline("UNDERSTAND\nTHE WORLD?", y=3.1, size=92,
-                       height=2.35, color=PURPLE)
-        zeno = sprite(4.35, 0, -.75)
-        ring = Circle(radius=2.0, color=PINK, stroke_width=7).move_to(zeno)
+        # No greeting or intro slate: curiosity is visible from frame one.
+        question = headline("WHAT IF AI COULD", y=5.0, size=64, height=1.0)
+        key = headline("UNDERSTAND\nTHE WORLD?", y=3.45, size=105,
+                       height=2.42, color=PURPLE)
+        zeno = sprite(4.65, 0, -.45)
+        ring = Circle(radius=2.15, color=PINK, stroke_width=7).move_to(zeno)
+        globe = VGroup(
+            Circle(radius=2.52,color=LAVENDER,stroke_width=3,stroke_opacity=.55),
+            Ellipse(width=2.55,height=5.04,color=LAVENDER,stroke_width=2,stroke_opacity=.45),
+            Ellipse(width=5.04,height=1.9,color=LAVENDER,stroke_width=2,stroke_opacity=.45),
+        ).move_to(zeno)
         zeno.set_z_index(2)
-        rays = burst(zeno.get_center(), 2.32)
-        cap = caption(segment["caption"])
-        self.phase(.23, FadeIn(brand, shift=DOWN*.15),
-                   FadeIn(zeno, shift=UP*.65, scale=.72),
-                   Create(ring), FadeIn(question, shift=DOWN*.22))
-        self.phase(.58, GrowFromCenter(key),
-                   LaggedStart(*[GrowFromCenter(r) for r in rays], lag_ratio=.08))
+        rays = burst(zeno.get_center(), 2.65)
+        cap = caption("Not just answer questions.")
+        self.add(question)
+        self.phase(.38, GrowFromCenter(key),
+                   FadeIn(zeno, shift=UP*.55, scale=.77), Create(ring), Create(globe))
+        self.phase(.70, LaggedStart(*[GrowFromCenter(r) for r in rays], lag_ratio=.07),
+                   zeno.animate.shift(UP*.12).scale(1.035), globe.animate.rotate(.18))
         self.phase(1, FadeIn(cap, shift=UP*.18),
-                   zeno.animate.shift(UP*.12).scale(1.04),
-                   ring.animate.scale(1.12), rays.animate.scale(1.08))
+                   ring.animate.scale(1.12), rays.animate.scale(1.06))
 
     def deal(self, segment, episode):
         # A typographic impact shot. Use names, not approximated company logos.
@@ -276,31 +360,28 @@ class ZenoDailyBrief(Scene):
                    FadeIn(cap, shift=UP*.1), rays.animate.scale(1.1))
 
     def spatial(self, segment, episode):
-        title = headline("SPATIAL\nINTELLIGENCE", y=4.8, size=85,
-                         height=2.05, color=PURPLE)
-        flat = Rectangle(width=3.8, height=2.55, color=PURPLE,
-                         fill_color=WHITE, fill_opacity=1, stroke_width=3)
-        mountains = Polygon([-1.65,-.9,0],[-.65,.72,0],[.1,-.1,0],
-                            [.7,.53,0],[1.65,-.9,0], color=PURPLE,
-                            fill_color=LAVENDER, fill_opacity=1)
-        sun = Dot([1.04,.68,0], radius=.22, color=PINK)
-        picture = VGroup(flat, mountains, sun).move_to(at(0,.55))
-        label = pill("2D IMAGE").move_to(at(0,-2.0))
+        title = headline("SPATIAL\nINTELLIGENCE", y=5.04, size=95,
+                         height=2.06, color=PURPLE)
+        picture = flat_studio().scale_to_fit_width(6.55).move_to(at(0,.55))
+        label = pill("2D IMAGE").move_to(at(0,-2.15))
         cap = caption("A flat picture is only the beginning.")
-        self.phase(.23, FadeIn(title, shift=DOWN*.35),
+        self.phase(.31, FadeIn(title, shift=DOWN*.35),
                    FadeIn(picture, shift=UP*.35, scale=.85),
                    GrowFromCenter(label), FadeIn(cap))
-        room = world().scale_to_fit_width(6.15).move_to(at(0,.5))
+        room = world().scale_to_fit_width(6.75)
+        if room.height > 5.0:
+            room.scale_to_fit_height(5.0)
+        room.move_to(at(0,.55))
         new_label = pill("INTERACTIVE 3D SPACE").move_to(at(0,-2.65))
         new_cap, change_cap = self.swap_caption(cap, segment["caption"])
-        self.phase(.63, ReplacementTransform(picture, room),
+        self.phase(.50, Flash(picture.get_center(),color=WHITE,flash_radius=2.3,
+                             line_length=.35,num_lines=12),
+                   picture.animate.scale(.94))
+        self.phase(.78, FadeOut(picture,scale=.72), FadeIn(room,scale=.73,shift=UP*.25),
                    ReplacementTransform(label,new_label), change_cap)
-        zeno = sprite(1.20,-2.55,-3.65,max_width=1.40)
-        spark = burst(at(0,.5), 2.65, PINK, 10)
-        # Keep the world in focus; the presenter arrives only after the reveal.
+        zeno = sprite(1.38,-2.52,-3.70,max_width=1.45)
         self.phase(1, FadeIn(zeno, shift=RIGHT*.5),
-                   FadeIn(spark, scale=.82),
-                   room.animate.shift(UP*.16).scale(1.025))
+                   room.animate.shift(UP*.12).scale(1.025))
 
     def room(self, segment, episode):
         title = headline("TRAIN IN A\nVIRTUAL WORLD", y=4.85,
@@ -308,7 +389,7 @@ class ZenoDailyBrief(Scene):
         small = pill("ILLUSTRATIVE SIMULATION", color=DARK).scale(.78)
         small.move_to(at(0,3.35))
         # An overhead game-like navigation view with a clear obstacle route.
-        floor = RoundedRectangle(width=6.05,height=4.55,corner_radius=.29,
+        floor = RoundedRectangle(width=6.45,height=4.85,corner_radius=.29,
                                  color=PURPLE,stroke_width=3,
                                  fill_color=WHITE,fill_opacity=1).move_to(at(0,.15))
         c = floor.get_center()
@@ -331,6 +412,7 @@ class ZenoDailyBrief(Scene):
         end = c+RIGHT*2.15+UP*1.5
         points = [start,c+RIGHT*2.15+DOWN*1.5,end]
         path = VMobject(color=PURPLE,stroke_width=6).set_points_as_corners(points)
+        route_glow = path.copy().set_stroke(PINK,width=16,opacity=.28)
         target = VGroup(Circle(radius=.33,color=PURPLE,stroke_width=4),
                         Dot(radius=.13,color=PINK)).move_to(end)
         bot = VGroup(
@@ -347,7 +429,7 @@ class ZenoDailyBrief(Scene):
                    FadeIn(floor,scale=.84), Create(grid),
                    LaggedStart(*[GrowFromCenter(o) for o in obstacles],lag_ratio=.18),
                    FadeIn(bot), FadeIn(target), FadeIn(cap))
-        self.phase(.72, Create(path,rate_func=linear),
+        self.phase(.72, Create(route_glow,rate_func=linear), Create(path,rate_func=linear),
                    MoveAlongPath(bot,path.copy(),rate_func=linear))
         next_cap, change = self.swap_caption(cap, segment["caption"])
         success = pill("VIRTUAL → REAL").move_to(at(0,-3.22))
@@ -379,7 +461,12 @@ class ZenoDailyBrief(Scene):
                            fill_color=shade,fill_opacity=1)
             ink = WHITE if i==0 else DARK
             label_mob = text(label,size=40,width=3.4,height=.6,color=ink)
-            layer = VGroup(slab,label_mob.move_to(slab)).move_to(at(0,-.8+i*1.62))
+            # Tiny circuitry accents on the slab, outside the label.
+            traces = VGroup(*[
+                Line([x,-.16,0],[x + .21,.16,0],color=ink,stroke_width=2)
+                for x in (-1.7,-1.42,1.15,1.43)
+            ]).set_opacity(.55)
+            layer = VGroup(slab,traces,label_mob.move_to(slab)).move_to(at(0,-.8+i*1.62))
             layers.append(layer)
         flow = VGroup(*[Arrow(at(2.65,-.8+i*1.62),at(2.65,.82+i*1.62),
                                   buff=.25,color=PURPLE,stroke_width=5)
