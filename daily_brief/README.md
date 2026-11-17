@@ -3,6 +3,14 @@
 A standalone 9:16 Manim template using the original Zeno Sensei illustration
 and the same bright lavender palette as the programming lessons.
 
+The motion-graphics edition uses independent full-screen shots instead of
+persistent content cards or a permanent header/footer. The original mascot
+moves into and out of the action, with large keyword reveals, an isometric
+world transformation, a navigation simulation and full-screen color wipes.
+The narration is unchanged from the previous version; existing valid WAVs
+can be reused. Text reveals follow authored fractions of each measured WAV
+rather than automatic word-level timestamps.
+
 - `daily_brief.py`: animated scene with reserved space for Shorts controls.
 - `episode.json`: date, source, visual beats, captions and narration.
 - `prepare_audio.py`: resumable Gemini narration generation.
@@ -61,10 +69,14 @@ clear both afterwards. ZENO_SILENT=1 always overrides audio.
 
 Set ZENO_EPISODE to the path of another episode JSON for both commands.
 Keep the episode id unique. Update the script and captions independently;
-visual-only changes do not invalidate the narration cache. Graphics support
-hook, deal, cube, room, scientist, stack and outro, plus a generic text tile.
+visual-only changes do not invalidate the narration cache. The AMD/World Labs episode includes seven bespoke shots (hook, deal, cube,
+room, scientist, stack and outro). Other episode ids intentionally use a
+news-neutral animated typography/presenter fallback until topic-specific
+shot methods are authored. This prevents unrelated episodes from displaying
+AMD-specific names or figures.
 
 The episode data is editorial input: verify the original source before
-publishing. Review the actual render at mobile size, including caption fit,
+publishing. Review the actual render at mobile size, especially the opening hook,
+isometric room morph, robot path, shot wipes and end screen, including caption fit,
 voice timing, pronunciation, and platform UI overlays. The safe area is
 a conservative layout guide, not a guarantee for every YouTube client.
