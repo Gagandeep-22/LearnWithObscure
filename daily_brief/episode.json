@@ -1,0 +1,14 @@
+{
+  "date": "17 NOV 2026",
+  "id": "2026-11-17-amd-world-labs",
+  "source": "https://newsroom.amd.com/news/amd-completes-acquisition-world-labs/",
+  "segments": [
+    {"visual":"hook","title":"AI THAT UNDERSTANDS THE WORLD?","caption":"What if AI could understand the world around us?","speech":"Hey, Code Crew! What if AI could understand the world around us, instead of just answering questions?","seconds":7},
+    {"visual":"deal","title":"AMD ACQUIRES WORLD LABS","caption":"Originally valued at $8.2 billion in stock.","speech":"AMD has acquired World Labs, in an all-stock deal originally valued at eight point two billion dollars!","seconds":7},
+    {"visual":"cube","title":"SPATIAL INTELLIGENCE","caption":"AI can generate interactive 3D environments.","speech":"World Labs develops AI that generates interactive three-dimensional environments. This is part of something called spatial intelligence.","seconds":8},
+    {"visual":"room","title":"TRAIN IN A VIRTUAL WORLD","caption":"Illustration: a robot learns to navigate obstacles.","speech":"Imagine training a robot to navigate a virtual room before letting it loose in the real world. Pretty cool, right?","seconds":8},
+    {"visual":"scientist","title":"FEI-FEI LI JOINS AMD","caption":"Executive vice president and chief scientist.","speech":"And AI researcher Fei-Fei Li is joining AMD as its chief scientist!","seconds":5},
+    {"visual":"stack","title":"MODELS MEET HARDWARE","caption":"Future infrastructure, not a product launch.","speech":"AMD wants this research to shape future AI hardware and software. But that doesn't mean these improvements are available today.","seconds":8},
+    {"visual":"outro","title":"STAY CURIOUS, CODE CREW!","caption":"Subscribe for more daily tech updates.","speech":"Could world models be the next big thing in AI? I'm Zeno Sensei. Stay curious, Code Crew!","seconds":7}
+  ]
+}

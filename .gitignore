@@ -12,3 +12,4 @@ wheels/
 
 # Manim renders and generated voiceover/cache files
 media/
+daily_brief/audio/

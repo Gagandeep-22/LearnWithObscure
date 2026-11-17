@@ -71,6 +71,60 @@ uv run manim --disable_caching -ql -o BubbleSortDemo_silent src/learnwithobscure
 Remove-Item Env:LWO_DISABLE_VOICEOVER
 ```
 
+## Selection Sort video
+
+`SelectionSortDemo` follows the same character-led lesson format as Binary
+Search and Bubble Sort: a visual explanation, a Java walkthrough synchronized
+with the array, additional cases, complexity, tradeoffs, and a complete method.
+The [Selection Sort storyboard](docs/selection_sort_storyboard.md) records the
+coverage and dialogue approach.
+The [fact-check report](docs/selection_sort_fact_check.md) records verified
+claims, example counts, corrections, and validation limits.
+
+Prepare missing Selection Sort narration separately from rendering:
+
+```powershell
+uv run --env-file .env python scripts/prepare_selection_sort_audio.py
+```
+
+The command reuses clips under `media/audio_files/selection_sort_demo/` and
+generates at most 8 new clips per run, with at least 22 seconds between requests.
+Rerun it to continue; use `--max-new 5` or `--min-request-interval 25` to adjust
+the request budget and spacing. Completed clips survive interrupted runs.
+
+After preparing the narration, render a review copy:
+
+```powershell
+uv run --env-file .env manim --disable_caching -pql src/learnwithobscure/scenes/selection_sort.py SelectionSortDemo
+```
+
+Use `-pqh` for a high-quality preview or `-pqk` for the 4K/60 fps final render.
+Keep `--disable_caching` so Manim does not skip narration. A fully cached scene
+can render without making Gemini requests.
+
+For a silent review without reading narration clips or contacting Gemini:
+
+```powershell
+$env:LWO_DISABLE_VOICEOVER = "1"
+try {
+    uv run manim --disable_caching -ql -o SelectionSortDemo_silent src/learnwithobscure/scenes/selection_sort.py SelectionSortDemo
+} finally {
+    Remove-Item Env:LWO_DISABLE_VOICEOVER -ErrorAction SilentlyContinue
+}
+```
+
+Optionally set `LWO_REVIEW_TIMELINE` to a path such as
+`media/selection_sort_review.json` before rendering to record visual beats and
+their timestamps. Remove the variable afterward. Generated media stays ignored
+by Git.
+
+Check the Bubble Sort and Selection Sort execution models without TTS or video
+rendering:
+
+```powershell
+uv run python -m unittest discover -s tests -v
+```
+
 ## Render a scene
 
 Once narration preparation has completed, render the Binary Search scene:
@@ -97,10 +151,16 @@ uv run manim -pql src/learnwithobscure/scenes/first_animation.py HelloLearn
 
 ## Project layout
 
+The standalone [daily tech brief](daily_brief/README.md) has its scene,
+episode data, narration preparation, and dedicated assets under `daily_brief/`.
+
 ```text
 assets/characters/                  Character illustrations
+daily_brief/                        Daily tech brief scene, episode, and assets
 src/learnwithobscure/                Python package
 src/learnwithobscure/scenes/         Manim scenes
 scripts/prepare_binary_search_audio.py  Resumable audio preparation
+scripts/prepare_selection_sort_audio.py Selection Sort audio preparation
+docs/selection_sort_storyboard.md      Selection Sort lesson plan and review guide
 media/                               Generated renders and audio (ignored by Git)
 ```

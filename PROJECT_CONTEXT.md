@@ -78,6 +78,55 @@ The visual style uses a lavender background, purple and pink accents, array
 cells, and the student/robot character illustrations. Keep the code legible on
 mobile-size screens and keep text inside its cards and panels.
 
+## Selection Sort video
+
+`SelectionSortDemo` in `src/learnwithobscure/scenes/selection_sort.py` extends
+the same lesson format to Selection Sort. See
+`docs/selection_sort_storyboard.md` for the coverage map and review points.
+Obscure opens with an array to sort when comparisons are cheap but moving values
+is expensive, giving Zeno a reason to introduce Selection Sort. He then predicts
+the next selection, questions the need to scan every remaining
+value, and tests whether Bubble Sort's no-swap early exit carries over. Zeno
+Sensei answers with visible evidence and occasional gentle humor. Avoid repeated
+stock praise or narrating every repeated step with the same sentence.
+
+The main example remains `[5, 1, 4, 2, 8]`, making the difference from Bubble
+Sort visible: scan the unsorted suffix, remember the smallest value's index,
+then swap once to extend the sorted prefix. Moving `minIndex` does not move
+array values. The Java walkthrough follows the statement events in
+`selection_sort_trace.py`, with separate temporary-value and array-assignment
+steps. Preserve the intermediate duplicate values during a swap, just as in
+Bubble Sort's code trace.
+
+Cover ascending and descending order, already-sorted and reverse input,
+duplicates and negative numbers, empty and single-element arrays, and the
+stability counterexample `[2A, 2B, 1]`. Strict `<` keeps the first minimum seen
+but does not make a long-distance swap stable. A no-swap pass does not prove
+the entire array is sorted: `[1, 3, 2]` still needs its next pass.
+
+This guarded implementation always makes `n(n - 1) / 2` value comparisons,
+including sorted input, for quadratic best, average, and worst time as input
+size grows. For nonempty input it makes at most `n - 1` swaps, skips swaps when
+the minimum is already at the destination, and needs `O(1)` auxiliary space.
+Explain the comparison-versus-write tradeoff, practical limitations, and
+complete Java implementation with example output.
+
+Prepare narration with
+`uv run --env-file .env python scripts/prepare_selection_sort_audio.py`.
+It reuses `media/audio_files/selection_sort_demo/`, defaults to 8 new requests
+per run, and spaces new requests by at least 22 seconds. Then render with:
+
+```powershell
+uv run --env-file .env manim --disable_caching -pql src/learnwithobscure/scenes/selection_sort.py SelectionSortDemo
+```
+
+For a silent review, set `LWO_DISABLE_VOICEOVER=1`, render with a separate
+output name such as `SelectionSortDemo_silent`, and remove the variable when
+finished. Set `LWO_REVIEW_TIMELINE` to an ignored JSON path under `media/` to
+record frame-review timestamps. Run
+`uv run python -m unittest discover -s tests -v` for both execution models.
+See the README for full silent-render commands and quality presets.
+
 ## Dialogue and voiceover status
 
 The scene uses Gemini voiceover through `manim-voiceover[gemini]`. Its `speak()`
@@ -110,6 +159,12 @@ card and code-trace state text.
 
 ## Repository layout
 
+The standalone vertical tech brief lives in `daily_brief/`, separate from the
+programming lessons. It contains `daily_brief.py`, `prepare_audio.py`,
+`episode.json`, and `assets/zeno.png`. See `daily_brief/README.md` for commands.
+It uses the shared root `.env`; generated narration in `daily_brief/audio/`
+is ignored by Git.
+
 ```text
 assets/characters/                         Student and robot illustrations
 src/learnwithobscure/                      Python package
@@ -117,9 +172,14 @@ src/learnwithobscure/scenes/               Manim scenes
 src/learnwithobscure/scenes/binary_search_complete.py
                                              Main binary-search lesson
 src/learnwithobscure/scenes/bubble_sort.py    Bubble Sort lesson
+src/learnwithobscure/scenes/selection_sort.py Selection Sort lesson
+src/learnwithobscure/scenes/selection_sort_trace.py
+                                             Selection Sort execution model
 src/learnwithobscure/scenes/first_animation.py
                                              Small introductory scene
 scripts/prepare_bubble_sort_audio.py          Resumable Bubble Sort TTS preparation
+scripts/prepare_selection_sort_audio.py       Resumable Selection Sort TTS preparation
+docs/selection_sort_storyboard.md             Selection Sort story and review guide
 media/                                     Generated renders and caches
 ```
 
