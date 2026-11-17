@@ -12,6 +12,19 @@ uv run manim --disable_caching -pql src/learnwithobscure/scenes/ai_universe.py A
 
 Use `-pqh` for a higher quality review. This scene is silent by design: no Gemini requests, API key or narration cache needed. Dialogue appears as timed captions and has stable identifiers for subsequent voiceover integration. Silent timings are estimates and will change when real recordings are available.
 
+## Character expression assets
+
+Place the two reviewed transparent PNGs under `assets/characters/expressions/`:
+
+- `obscure_confused.png` — original pose, changed expression.
+- `obscure_questioning.png` — open-palm gesture.
+
+Do not overwrite `student_chibi.png` or `robot_mentor.png`. The scene uses the master image if an expression is unavailable and prints a warning. To require both reviewed images for a visual review, set `$env:LWO_REQUIRE_EXPRESSION_ASSETS = "1"` before rendering and remove it afterward. The assets need to be copied locally because they are not included in this code-only change.
+
+The new reactions include brief bounces, thinking tilts and nods. Poses are selected per dialogue beat, and the replacement is bounded to the existing character slot. Zeno continues using the original illustration with movement; further pose artwork must be approved before use.
+
+Quiz answers now lay out below the measured question bounds, with equal-sized rows and a reserved caption region. The layout guard rejects overlaps if a future question or font is too large. Other scenes still require visual review.
+
 ## Sequence
 
 1. Buzzword overload and character entrance; Zeno organizes the terms into techniques, models, capabilities and tools.
