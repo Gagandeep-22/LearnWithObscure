@@ -339,15 +339,33 @@ class AIUniverseFoundations(Scene):
         self.say("recap-04","robot","Exactly. Three concepts unlocked.",
                  Indicate(d,color=WHITE,scale_factor=1.04))
         self.stage()
-        self.title("QUICK CHALLENGE")
-        question = txt("A chess program uses rules and search.\nIt does not learn from data.",38,
-                       DARK,width=12.4,height=1.5).move_to(UP*1.66)
-        options = VGroup(*[tag(v,30,fill=WHITE,width=5.4) for v in
-                           ("A  /  AI only","B  /  Machine learning","C  /  Deep learning")])
-        options.arrange(DOWN,buff=.20).move_to(DOWN*.03)
-        self.play(FadeIn(question),LaggedStart(*[FadeIn(o,shift=UP*.15) for o in options],
+        heading = self.title("QUICK CHALLENGE")
+        question = txt("A chess program uses rules and search.\nIt does not learn from data.",36,
+                       DARK,width=12.1,height=1.30)
+        question.next_to(heading, DOWN, buff=.42).set_x(0)
+        # Lay out the answers from the actual question bounds, not a fixed y.
+        # Uniform rows also make the countdown and answer reveal easier to scan.
+        options = VGroup()
+        for value in ("A  /  AI only", "B  /  Machine learning", "C  /  Deep learning"):
+            background = box(6.10, .68, fill=WHITE)
+            label = txt(value, 29, width=5.65, height=.42).move_to(background)
+            options.add(VGroup(background, label))
+        options.arrange(DOWN, buff=.20)
+        gap = .42
+        caption_top = -3.22 + 1.12 / 2
+        available = question.get_bottom()[1] - gap - (caption_top + .24)
+        if available <= 0:
+            raise ValueError("Question leaves no room for quiz options")
+        if options.height > available:
+            options.scale_to_fit_height(available)
+        options.next_to(question, DOWN, buff=gap).set_x(0)
+        # Guard both the question and later dialogue caption safe areas.
+        if (options.get_top()[1] > question.get_bottom()[1] - .40
+                or options.get_bottom()[1] < caption_top + .22):
+            raise ValueError("Quick challenge layout overlaps question or caption")
+        self.play(FadeIn(question),LaggedStart(*[FadeIn(o,shift=UP*.12) for o in options],
                                                lag_ratio=.15),run_time=.9)
-        count = txt("3",46,PURPLE).move_to(pos(5.35,-.35))
+        count = txt("3",46,PURPLE).next_to(options, RIGHT, buff=.85)
         self.play(GrowFromCenter(count),run_time=.3)
         for n in (2,1):
             self.wait(.72)
