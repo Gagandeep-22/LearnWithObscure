@@ -144,7 +144,12 @@ class ZenoDailyBrief(Scene):
             wav, duration = (None, float(segment["seconds"])) if SILENT else clips[index]
             self.start_beat(duration, wav, index == len(episode["segments"])-1)
             self.background(index)
-            shots.get(segment["visual"], self.generic)(segment, episode)
+            # The seven bespoke illustrations are specific to this story.
+            # Do not show an AMD deal for an unrelated future episode.
+            shot = shots.get(segment["visual"], self.generic) if (
+                episode["id"] == "2026-11-17-amd-world-labs"
+            ) else self.generic
+            shot(segment, episode)
             self.finish_beat()
 
     def background(self, index):
@@ -291,7 +296,7 @@ class ZenoDailyBrief(Scene):
         new_cap, change_cap = self.swap_caption(cap, segment["caption"])
         self.phase(.63, ReplacementTransform(picture, room),
                    ReplacementTransform(label,new_label), change_cap)
-        zeno = sprite(1.75,-2.3,-3.25,max_width=1.95)
+        zeno = sprite(1.20,-2.55,-3.65,max_width=1.40)
         spark = burst(at(0,.5), 2.65, PINK, 10)
         # Keep the world in focus; the presenter arrives only after the reveal.
         self.phase(1, FadeIn(zeno, shift=RIGHT*.5),
@@ -336,13 +341,15 @@ class ZenoDailyBrief(Scene):
             Dot(LEFT*.13,radius=.045,color=PURPLE),
             Dot(RIGHT*.13,radius=.045,color=PURPLE),
         ).move_to(start)
+        bot.set_z_index(3)
+        target.set_z_index(2)
         cap = caption("A robot can practice in a simulated environment.")
         self.phase(.25, FadeIn(title), FadeIn(small),
                    FadeIn(floor,scale=.84), Create(grid),
                    LaggedStart(*[GrowFromCenter(o) for o in obstacles],lag_ratio=.18),
                    FadeIn(bot), FadeIn(target), FadeIn(cap))
         self.phase(.72, Create(path,rate_func=linear),
-                   MoveAlongPath(bot,path,rate_func=linear))
+                   MoveAlongPath(bot,path.copy(),rate_func=linear))
         next_cap, change = self.swap_caption(cap, segment["caption"])
         success = pill("VIRTUAL → REAL").move_to(at(0,-3.22))
         self.phase(1, GrowFromCenter(success), change, Indicate(target,color=PURPLE))
