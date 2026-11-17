@@ -200,15 +200,13 @@ class ZenoDailyBrief(Scene):
         if animations:
             # Preserve punchy motion rather than stretching an entrance for
             # several seconds. Use remaining time to drift the ambient shape.
-            motion = min(seconds, 1.55)
-            self.play(*animations, run_time=motion)
-            hold = seconds-motion
-            if hold >= 1/config.frame_rate:
+            motion_frames = min(frames, round(1.55*config.frame_rate))
+            self.play(*animations, run_time=motion_frames/config.frame_rate)
+            hold_frames = frames-motion_frames
+            if hold_frames:
                 self.play(self.decor.animate.shift(
                     (LEFT if self.phase_count % 2 else RIGHT)*.12
-                ), run_time=hold, rate_func=linear)
-            elif hold > 0:
-                self.wait(hold)
+                ), run_time=hold_frames/config.frame_rate, rate_func=linear)
         else:
             self.wait(seconds)
 
@@ -225,7 +223,7 @@ class ZenoDailyBrief(Scene):
             stripe = Rectangle(width=.42, height=16.4, stroke_width=0,
                                fill_color=PINK, fill_opacity=1)
             stripe.next_to(wipe, RIGHT, buff=0)
-            wipe_group = VGroup(wipe, stripe).move_to(LEFT*10)
+            wipe_group = VGroup(wipe, stripe).move_to(LEFT*10).set_z_index(100)
             self.add(wipe_group)
             self.play(wipe_group.animate.move_to(ORIGIN),
                       run_time=seconds, rate_func=linear)
@@ -243,6 +241,7 @@ class ZenoDailyBrief(Scene):
                        height=2.35, color=PURPLE)
         zeno = sprite(4.35, 0, -.75)
         ring = Circle(radius=2.0, color=PINK, stroke_width=7).move_to(zeno)
+        zeno.set_z_index(2)
         rays = burst(zeno.get_center(), 2.32)
         cap = caption(segment["caption"])
         self.phase(.23, FadeIn(brand, shift=DOWN*.15),
@@ -402,6 +401,7 @@ class ZenoDailyBrief(Scene):
         zeno = sprite(4.25,0,.3)
         rays = burst(zeno.get_center(),2.45)
         halo = Circle(radius=2.22,color=PURPLE,stroke_width=5).move_to(zeno)
+        zeno.set_z_index(2)
         signoff = headline("STAY CURIOUS,\nCODE CREW!",y=-2.55,size=66,
                            height=1.62)
         subscribe = pill("SUBSCRIBE",color=PINK,ink=DARK).move_to(at(0,-4.25))
