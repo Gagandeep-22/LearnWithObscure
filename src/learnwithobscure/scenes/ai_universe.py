@@ -199,6 +199,7 @@ class AIUniverseFoundations(Scene):
                         "realize": "happy", "nod": "speaking"}.get(reaction, "speaking")
         listener = "robot" if who == "student" else "student"
         self.react(listener, "neutral")
+        reaction = reaction or ("question" if line.rstrip().endswith("?") else "nod")
         # Keep the total dialogue duration unchanged after adding reactions.
         start = self.time
         if pose is not None or reaction is not None:
@@ -207,6 +208,8 @@ class AIUniverseFoundations(Scene):
         if animations:
             self.play(*animations, run_time=min(1.10, remaining))
         remaining = duration-(self.time-start)
+        # A speaker entering during the teaching animation can now switch poses.
+        self.react(who, pose)
         if remaining > .9 and who in self.characters:
             # A brief blink between phrases; optional reviewed artwork only.
             blink = EXPRESSION_ASSETS[who].get("blink")
@@ -215,6 +218,9 @@ class AIUniverseFoundations(Scene):
                 self.react(who, "blink")
                 self.wait(max(1, ceil(.12 * config.frame_rate)) / config.frame_rate)
                 self.react(who, pose)
+            elif remaining > 1.1:
+                # Keep the original artwork lively even before variants exist.
+                self.react(who, None, "nod")
         remaining = duration-(self.time-start)
         if remaining > 0:
             self.wait(ceil(remaining * config.frame_rate) / config.frame_rate)
