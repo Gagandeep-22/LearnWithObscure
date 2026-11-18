@@ -1,5 +1,10 @@
 """Cached AI Universe narration and a no-render preparation CLI."""
 import ast
+import base64
+import json
+import re
+from urllib.request import Request, urlopen
+from urllib.error import HTTPError
 import hashlib
 import os
 import time
@@ -8,7 +13,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 AUDIO_DIR = ROOT / "media" / "audio_files" / "ai_universe"
-MODEL = "gemini-3.1-flash-tts-preview"
+MODEL = os.getenv("LWO_GEMINI_TTS_MODEL", "gemini-3.8-flash-lite-tts")
 VOICES = {"student": "Achird", "robot": "Leda"}
 
 def clip_path(line, who):
@@ -55,14 +60,100 @@ def preflight():
                            "Run uv run python scripts/prepare_ai_universe_audio.py first. "
                            "Use LWO_DISABLE_VOICEOVER=1 for silent preview.")
     
+def extract_audio(response):
+    """Read the first complete candidate containing audio, not text."""
+    candidates = response.get("candidates") or []
+    if not isinstance(candidates, list):
+        raise RuntimeError("Gemini returned a malformed candidate list.")
+    reasons = [c.get("finishReason", "unspecified") for c in candidates]
+    for candidate in candidates:
+        if candidate.get("finishReason") not in ("STOP", None):
+            continue
+        blobs = [p.get("inlineData") or p.get("inline_data") or {}
+                 for p in (candidate.get("content") or {}).get("parts", [])]
+        audio = [(b.get("mimeType") or b.get("mime_type") or "", b["data"])
+                 for b in blobs if b.get("data") and
+                 (b.get("mimeType") or b.get("mime_type") or "").lower().startswith("audio/")]
+        if len(audio) == 1:
+            mime, data = audio[0]
+            return mime, base64.b64decode(data, validate=True)
+        if len(audio) > 1:
+            raise RuntimeError("Unexpected multiple audio parts; refusing to join blindly.")
+    feedback = (response.get("promptFeedback") or {}).get("blockReason", "none")
+    raise RuntimeError(f"Gemini returned no complete audio (candidates={len(candidates)}, "
+                       f"finish reasons={reasons}, prompt block={feedback}). "
+                       "Stop and investigate before spending more quota.")
+
+
+def save_audio(path, mime, data):
+    """Support both complete WAV and legacy 16-bit PCM responses."""
+    if not data:
+        raise ValueError("Gemini returned an empty audio payload.")
+    temporary = path.with_suffix(".tmp.wav")
+    try:
+        if data[:4] == b"RIFF" and data[8:12] == b"WAVE":
+            temporary.write_bytes(data)
+        elif mime.lower().startswith(("audio/l16", "audio/pcm")):
+            rate_match = re.search(r"rate=(\d+)", mime, re.I)
+            rate = int(rate_match.group(1)) if rate_match else 24000
+            channels_match = re.search(r"channels=(\d+)", mime, re.I)
+            channels = int(channels_match.group(1)) if channels_match else 1
+            if rate <= 0 or channels <= 0 or len(data) % (2 * channels):
+                raise ValueError("Invalid PCM audio parameters or byte count.")
+            with wave.open(str(temporary), "wb") as f:
+                f.setnchannels(channels)
+                f.setsampwidth(2)
+                f.setframerate(rate)
+                f.writeframes(data)
+        else:
+            raise ValueError(f"Unsupported audio MIME type: {mime}")
+        duration(temporary)
+        temporary.replace(path)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+def request_audio(line, who, path):
+    """Call the Gemini Developer API directly; no Manim/SoX/SDK required."""
+    if not re.fullmatch(r"gemini-[a-zA-Z0-9.-]+", MODEL):
+        raise ValueError("Invalid LWO_GEMINI_TTS_MODEL.")
+    transcript = line if not MODEL.endswith("-preview") else "Read aloud exactly: " + line
+    body = {
+        "contents": [{"parts": [{"text": transcript}]}],
+        "generationConfig": {
+            "responseModalities": ["AUDIO"],
+            "speechConfig": {"voiceConfig": {"prebuiltVoiceConfig": {
+                "voiceName": VOICES[who]}}},
+        },
+    }
+    request = Request(
+        f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL}:generateContent",
+        data=json.dumps(body).encode("utf-8"),
+        headers={"Content-Type": "application/json",
+                 "x-goog-api-key": os.environ["GEMINI_API_KEY"]},
+        method="POST",
+    )
+    try:
+        with urlopen(request, timeout=180) as result:
+            response = json.load(result)
+    except HTTPError as exc:
+        try:
+            status = json.loads(exc.read()).get("error", {}).get("status", "")
+        except (ValueError, OSError):
+            status = ""
+        raise RuntimeError(f"Gemini HTTP {exc.code} {status}; model={MODEL}") from None
+    mime, data = extract_audio(response)
+    save_audio(path, mime, data)
+
+
 def prepare(max_new=8, interval=22, check=False):
     lines = list(dialogue())
     missing = {clip_path(line, who): (key, who, line) for key, who, line in lines
                if not ready(clip_path(line, who))}
+    print(f"Model: {MODEL}; voices: {VOICES}")
     print(f"{len(lines)} dialogue beats; {len(missing)} unique clips missing.")
     if check or not missing:
         return 0 if not missing else 1
-    from manim_voiceover.services.gemini import GeminiService
     try:
         from dotenv import load_dotenv
     except ImportError:
@@ -72,23 +163,18 @@ def prepare(max_new=8, interval=22, check=False):
     if not os.getenv("GEMINI_API_KEY"):
         raise RuntimeError("Set GEMINI_API_KEY locally in .env.")
     AUDIO_DIR.mkdir(parents=True, exist_ok=True)
-    services = {}
     last = None
     generated = 0
     for path, (key, who, line) in list(missing.items())[:max_new]:
         if last is not None:
             time.sleep(max(0, interval - (time.monotonic() - last)))
-        if who not in services:
-            services[who] = GeminiService(voice=VOICES[who], model=MODEL)
         # Never treat an unfinished WAV as a cache hit.
         if path.exists():
             path.unlink()
+        print(f"Requesting {key} ({VOICES[who]})...", flush=True)
         last = time.monotonic()
         try:
-            result = services[who].generate_from_text(line, cache_dir=AUDIO_DIR, path=path.name)
-            actual = AUDIO_DIR / result["original_audio"]
-            if actual != path:
-                actual.replace(path)
+            request_audio(line, who, path)
             duration(path)
         except Exception:
             if path.exists() and not ready(path):
