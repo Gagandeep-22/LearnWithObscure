@@ -43,7 +43,7 @@ class AIUniverseFull(AICapabilities):
                            lag_ratio=.16)
 
     def foundation_models(self):
-        self.setup("10  /  Foundation models", "Broad pretraining, many downstream uses")
+        self.setup_topic("10  /  Foundation models", "Broad pretraining, many downstream uses")
         data = VGroup(*[tag(x,22) for x in ("Books","Images","Code")]).arrange(DOWN,buff=.18).move_to(pos(-3.8,.8))
         core = VGroup(Circle(radius=.83,color=PURPLE,fill_color=LAVENDER,fill_opacity=1),
                       txt("MODEL",23,DARK)).move_to(UP*.8)
@@ -56,7 +56,7 @@ class AIUniverseFull(AICapabilities):
         self.say("model-04","student","One model, many jobs. My manager would approve.",reaction="realize")
 
     def transformers(self):
-        self.setup("11  /  Transformers", "An architecture using attention")
+        self.setup_topic("11  /  Transformers", "An architecture using attention")
         words = VGroup(*[tag(x,25,width=2) for x in ("The","animal","was","tired")]).arrange(RIGHT,buff=.35).move_to(UP*1.25)
         links = VGroup(*[CurvedArrow(words[-1].get_bottom(),words[i].get_bottom(),
                                     angle=-.55,color=PINK if i==1 else LAVENDER,
@@ -69,7 +69,7 @@ class AIUniverseFull(AICapabilities):
         self.say("tr-05","robot","Exactly. Many modern language models use transformers, but not all AI does.",reaction="nod")
 
     def language_models(self):
-        self.setup("12  /  LLMs and SLMs", "Language models learn patterns over tokens")
+        self.setup_topic("12  /  LLMs and SLMs", "Language models learn patterns over tokens")
         prefix = txt("The sky is",46,PURPLE).move_to(pos(-2.9,1.1))
         choices = VGroup(*[tag(x,27) for x in ("blue","clear","dark")]).arrange(DOWN,buff=.19).move_to(pos(3.1,1.0))
         connector = arrow(prefix.get_right(),choices.get_left())
@@ -84,7 +84,7 @@ class AIUniverseFull(AICapabilities):
         self.say("lm-06","student","Bigger is not automatically better. Finally, some good news for my laptop.",reaction="realize")
 
     def model_lifecycle(self):
-        self.setup("13  /  Training, inference & context", "Learning and using a model are different")
+        self.setup_topic("13  /  Training, inference & context", "Learning and using a model are different")
         nodes, links = self.chain(("DATA","TRAIN","MODEL","INFER"))
         self.say("life-01","robot","Training adjusts model weights using data. Inference uses a trained model to produce an output.",self.reveal_chain(nodes,links))
         self.say("life-02","student","So every time I ask a question, the model does not automatically retrain?",pose="questioning")
@@ -96,7 +96,7 @@ class AIUniverseFull(AICapabilities):
         self.say("life-05","student","I'll stop pasting my entire project into one message. Maybe.",reaction="think")
 
     def multimodal(self):
-        self.setup("14  /  Multimodal AI", "Work with multiple modalities")
+        self.setup_topic("14  /  Multimodal AI", "Work with multiple modalities")
         icons = VGroup(*[tag(x,25) for x in ("TEXT","IMAGE","AUDIO")]).arrange(DOWN,buff=.24).move_to(pos(-3.7,.75))
         model = VGroup(Circle(radius=.8,color=PURPLE,fill_color=LAVENDER,fill_opacity=1),txt("AI",36)).move_to(UP*.75)
         result = tag("A cat in space!",27,width=3.6,fill=PINK).move_to(pos(3.35,.75))
@@ -107,7 +107,7 @@ class AIUniverseFull(AICapabilities):
         self.say("multi-04","student","Our astronaut cat is back. It has a cinematic universe now.",reaction="realize")
 
     def reasoning(self):
-        self.setup("15  /  Reasoning models", "Designed for more deliberate problem solving")
+        self.setup_topic("15  /  Reasoning models", "Designed for more deliberate problem solving")
         steps, links = self.chain(("PROBLEM","PLAN","CHECK","ANSWER"))
         self.say("reason-01","student","Why do some models take longer to answer a puzzle?",pose="questioning")
         self.say("reason-02","robot","Reasoning models are designed to spend more computation on difficult multi-step tasks. This schematic is not their hidden reasoning.",self.reveal_chain(steps,links))
@@ -115,7 +115,7 @@ class AIUniverseFull(AICapabilities):
         self.say("reason-04","student","Thinking longer does not guarantee being right. Relatable.",reaction="nod")
 
     def prompts(self):
-        self.setup("16  /  Prompt engineering", "Specify task, context and constraints")
+        self.setup_topic("16  /  Prompt engineering", "Specify task, context and constraints")
         vague = tag("Write code",32,width=4.8).move_to(pos(-3,.75))
         clear = VGroup(box(5.2,2.1,fill=WHITE),txt("Java method\nHandle null input\nInclude two tests",29,width=4.8,height=1.6)).move_to(pos(2.75,.75))
         self.say("prompt-01","student","I asked for code and got an entire novel.",FadeIn(vague),pose="confused")
@@ -124,7 +124,7 @@ class AIUniverseFull(AICapabilities):
         self.say("prompt-04","student","So the problem was my requirements document. Awkward.",reaction="think")
 
     def embeddings(self):
-        self.setup("17  /  Embeddings & vector databases", "Search by similarity in a learned representation")
+        self.setup_topic("17  /  Embeddings & vector databases", "Search by similarity in a learned representation")
         axes = Axes(x_range=[0,5,1],y_range=[0,4,1],x_length=7,y_length=2.8,tips=False,axis_config={"color":DARK,"include_ticks":False}).move_to(UP*.65)
         items = [(1,2.7,"cat"),(1.65,2.3,"kitten"),(3.8,.8,"Java"),(4.3,1.4,"Python")]
         marks = VGroup()
@@ -139,7 +139,7 @@ class AIUniverseFull(AICapabilities):
         self.say("embed-04","student","Search by meaning instead of just matching words. Nice.",reaction="realize")
 
     def rag(self):
-        self.setup("18  /  Retrieval-augmented generation", "Retrieve relevant evidence before generating")
+        self.setup_topic("18  /  Retrieval-augmented generation", "Retrieve relevant evidence before generating")
         nodes, links = self.chain(("QUESTION","RETRIEVE","CONTEXT","LLM"))
         doc = tag("Company docs",24,width=3.3,fill=PINK).move_to(pos(-1.5,-.8))
         self.say("rag-01","student","How can a chatbot answer questions about our private codebase?",pose="questioning")
@@ -148,7 +148,7 @@ class AIUniverseFull(AICapabilities):
         self.say("rag-04","student","An open-book exam for AI. Still has to read the right page.",reaction="realize")
 
     def fine_tuning(self):
-        self.setup("19  /  Fine-tuning", "Adapt learned model parameters")
+        self.setup_topic("19  /  Fine-tuning", "Adapt learned model parameters")
         nodes, links=self.chain(("BASE MODEL","EXAMPLES","ADAPTED"))
         self.say("fine-01","student","Is fine-tuning just another name for RAG?",pose="questioning")
         self.say("fine-02","robot","No. Fine-tuning further trains a model on selected examples, changing weights to adapt behavior or task performance.",self.reveal_chain(nodes,links))
@@ -156,7 +156,7 @@ class AIUniverseFull(AICapabilities):
         self.say("fine-04","student","Learning a new skill versus looking something up. Got it.",reaction="realize")
 
     def tools(self):
-        self.setup("20  /  Tool calling", "A model requests an external operation")
+        self.setup_topic("20  /  Tool calling", "A model requests an external operation")
         nodes,links=self.chain(("MODEL","CALCULATOR","RESULT"))
         answer=txt("17 × 23 = 391",42,PURPLE).move_to(DOWN*.85)
         self.say("tool-01","student","Can I make a model use an actual calculator?",pose="questioning")
@@ -165,7 +165,7 @@ class AIUniverseFull(AICapabilities):
         self.say("tool-04","student","My calculator finally got promoted to AI infrastructure.",reaction="realize")
 
     def mcp(self):
-        self.setup("21  /  Model Context Protocol", "A standard interface between AI applications and servers")
+        self.setup_topic("21  /  Model Context Protocol", "A standard interface between AI applications and servers")
         host=tag("AI HOST",28,width=3.2).move_to(pos(-3.8,.8))
         hub=tag("MCP",34,fill=PINK,width=2.3).move_to(UP*.8)
         servers=VGroup(*[tag(x,23,width=3) for x in ("Files","Database","Tools")]).arrange(DOWN,buff=.17).move_to(pos(3.7,.8))
@@ -175,14 +175,14 @@ class AIUniverseFull(AICapabilities):
         self.say("mcp-04","student","A common connector, rather than a new brain.",reaction="realize")
 
     def workflows(self):
-        self.setup("22  /  AI workflows", "A predefined sequence of steps")
+        self.setup_topic("22  /  AI workflows", "A predefined sequence of steps")
         nodes,links=self.chain(("INPUT","CLASSIFY","DRAFT","REVIEW"))
         self.say("flow-01","robot","A workflow can connect AI and ordinary software in predefined steps. For example, classify a ticket, draft a reply and request review.",self.reveal_chain(nodes,links))
         self.say("flow-02","student","Does using AI automatically make that an agent?",pose="questioning")
         self.say("flow-03","robot","Not necessarily. An agent typically has more discretion over which actions to take toward a goal.",Indicate(nodes[2],color=PURPLE))
 
     def agents(self):
-        self.setup("23  /  AI agents & agentic AI", "Goal-directed action with feedback")
+        self.setup_topic("23  /  AI agents & agentic AI", "Goal-directed action with feedback")
         nodes,links=self.chain(("OBSERVE","DECIDE","ACT","CHECK"),y=.95)
         loop=CurvedArrow(nodes[-1].get_bottom(),nodes[0].get_bottom(),angle=-.65,color=PINK,stroke_width=5)
         gate=tag("Approval for risky actions",22,width=5.1).move_to(DOWN*1.35)
@@ -193,7 +193,7 @@ class AIUniverseFull(AICapabilities):
         self.say("agent-05","student","So it can fix my tests, but should not deploy on a Friday without asking.",reaction="realize")
 
     def multi_agent(self):
-        self.setup("24  /  Multi-agent systems", "Coordinate several agents")
+        self.setup_topic("24  /  Multi-agent systems", "Coordinate several agents")
         goal=tag("GOAL",28,fill=PINK).move_to(UP*1.9)
         roles=VGroup(*[tag(x,25,width=2.8) for x in ("Researcher","Coder","Tester")]).arrange(RIGHT,buff=.5).move_to(UP*.45)
         result=tag("Reviewed result",24,width=3.5).move_to(DOWN*1.05)
@@ -203,7 +203,7 @@ class AIUniverseFull(AICapabilities):
         self.say("team-04","student","Even AI teams have communication problems. That explains a lot.",reaction="think")
 
     def agi(self):
-        self.setup("25  /  Artificial general intelligence", "A debated research goal, not a specific tool")
+        self.setup_topic("25  /  Artificial general intelligence", "A debated research goal, not a specific tool")
         orbit=VGroup(*[Circle(radius=r,color=LAVENDER,stroke_width=2) for r in (1,1.6,2.1)]).move_to(UP*.45)
         center=txt("AGI?",60,PURPLE).move_to(orbit)
         self.say("agi-01","student","And AGI? Is that just a really big chatbot?",pose="questioning")
