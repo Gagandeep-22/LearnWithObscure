@@ -17,9 +17,13 @@ def clip_path(line, who):
 
 def duration(path):
     with wave.open(str(path), "rb") as f:
-        if not f.getnframes() or not f.getframerate():
+        frames = f.getnframes()
+        rate = f.getframerate()
+        if not frames or not rate:
             raise ValueError(f"Empty audio: {path}")
-        return f.getnframes() / f.getframerate()
+        if len(f.readframes(frames)) != frames * f.getnchannels() * f.getsampwidth():
+            raise ValueError(f"Incomplete audio: {path}")
+        return frames / rate
 
 def ready(path):
     try:
@@ -58,11 +62,15 @@ def prepare(max_new=8, interval=22, check=False):
     print(f"{len(lines)} dialogue beats; {len(missing)} unique clips missing.")
     if check or not missing:
         return 0 if not missing else 1
-    from dotenv import load_dotenv
-    load_dotenv(ROOT / ".env")
+    from manim_voiceover.services.gemini import GeminiService
+    try:
+        from dotenv import load_dotenv
+    except ImportError:
+        pass
+    else:
+        load_dotenv(ROOT / ".env")
     if not os.getenv("GEMINI_API_KEY"):
         raise RuntimeError("Set GEMINI_API_KEY locally in .env.")
-    from manim_voiceover.services.gemini import GeminiService
     AUDIO_DIR.mkdir(parents=True, exist_ok=True)
     services = {}
     last = None
