@@ -26,7 +26,7 @@ class AICapabilities(AIUniverseFoundations):
         self.challenge()
         self.wait(.5)
 
-    def setup(self, title, subtitle):
+    def setup_topic(self, title, subtitle):
         self.stage()
         self.title(title, subtitle)
         student = self.character("student", 2.12, -6.03, -1.32, max_width=1.5)
@@ -35,7 +35,7 @@ class AICapabilities(AIUniverseFoundations):
                   FadeIn(robot, shift=LEFT*.4), run_time=.45)
 
     def predict(self):
-        self.setup("04  /  Predictive AI", "Estimate an outcome from available information")
+        self.setup_topic("04  /  Predictive AI", "Estimate an outcome from available information")
         axes = Axes(x_range=[0,6,1], y_range=[0,5,1],
                     x_length=5.2, y_length=2.8, tips=False,
                     axis_config={"color": DARK, "include_ticks": False}).move_to(pos(-2,.35))
@@ -57,7 +57,7 @@ class AICapabilities(AIUniverseFoundations):
         self.say("cap-p05","robot","Exactly. And prediction is only one thing AI can do.",reaction="nod")
 
     def generate(self):
-        self.setup("05  /  Generative AI", "Create new content from learned patterns")
+        self.setup_topic("05  /  Generative AI", "Create new content from learned patterns")
         prompt = tag("Draw a cat astronaut",25,width=4.2).move_to(pos(-3.2,1.05))
         model = VGroup(Circle(radius=.75,color=PURPLE,fill_color=LAVENDER,fill_opacity=1),
                        txt("AI",35,DARK)).move_to(pos(0,1.05))
@@ -83,7 +83,7 @@ class AICapabilities(AIUniverseFoundations):
         self.say("cap-g05","robot","And generated content can still contain mistakes.",reaction="nod")
 
     def vision(self):
-        self.setup("06  /  Computer Vision", "Interpret images and video")
+        self.setup_topic("06  /  Computer Vision", "Interpret images and video")
         ground = Line(pos(-4,-.65),pos(4,-.65),color=DARK,stroke_width=3)
         car = VGroup(box(1.6,.62,fill=LAVENDER),
                      *[Circle(radius=.16,color=DARK,fill_opacity=1).move_to(pos(x,-.35)) for x in (-.49,.49)])
@@ -107,7 +107,7 @@ class AICapabilities(AIUniverseFoundations):
         self.say("cap-v05","robot","Right. Detection is one capability in a larger system.",reaction="nod")
 
     def language(self):
-        self.setup("07  /  Natural Language Processing", "Work with human language")
+        self.setup_topic("07  /  Natural Language Processing", "Work with human language")
         source = tag("Hello, how are you?",29,width=4.6).move_to(pos(-3.25,.95))
         target = tag("Hola, ¿cómo estás?",29,width=4.6,fill="#F5EAFB").move_to(pos(3.25,.95))
         bridge = arrow(pos(-1.1,.95),pos(1.1,.95))
@@ -124,7 +124,7 @@ class AICapabilities(AIUniverseFoundations):
         self.say("cap-n05","robot","Yes. Modern language models are one way to solve NLP tasks.",reaction="nod")
 
     def speech(self):
-        self.setup("08  /  Speech AI", "Recognize speech or synthesize a voice")
+        self.setup_topic("08  /  Speech AI", "Recognize speech or synthesize a voice")
         wave = VGroup(*[Line(DOWN*h/2,UP*h/2,color=PURPLE,stroke_width=5)
                          for h in (.2,.45,.85,.55,1.25,.8,.4,.95,.55,.25)])
         wave.arrange(RIGHT,buff=.085).move_to(pos(-3.6,.8))
@@ -145,7 +145,7 @@ class AICapabilities(AIUniverseFoundations):
         self.say("cap-s05","robot","And speech synthesis is also an example of generative AI.",reaction="nod")
 
     def spatial(self):
-        self.setup("09  /  Spatial AI", "Reason about space, geometry and relationships")
+        self.setup_topic("09  /  Spatial AI", "Reason about space, geometry and relationships")
         def poly(coords, color):
             return Polygon(*[pos(x,y) for x,y in coords],color=PURPLE,
                            fill_color=color,fill_opacity=1,stroke_width=2)
