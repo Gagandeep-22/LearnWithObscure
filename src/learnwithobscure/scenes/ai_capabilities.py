@@ -13,6 +13,10 @@ class AICapabilities(AIUniverseFoundations):
     """Reuse the approved foundations layout and character reaction system."""
 
     def construct(self):
+        import os
+        from learnwithobscure.scenes.ai_universe_audio import preflight
+        if os.getenv("LWO_DISABLE_VOICEOVER") != "1":
+            preflight()
         self.camera.background_color = BG
         self.caption = None
         self.dialogue_ids = set()

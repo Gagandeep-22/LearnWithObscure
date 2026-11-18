@@ -1,10 +1,12 @@
-"""AI Universe, opening + foundations. Silent visual prototype; no TTS calls.
+"""AI Universe, opening + foundations. Cached narration; set LWO_DISABLE_VOICEOVER=1 for a silent preview.
 
 Run: uv run manim --disable_caching -pql src/learnwithobscure/scenes/ai_universe.py AIUniverseFoundations
 """
 import os
 from manim import *
 from manimpango import list_fonts
+from math import ceil
+from learnwithobscure.scenes.ai_universe_audio import clip_path, duration as audio_duration, preflight
 
 from learnwithobscure.scenes.bubble_sort import (
     BG, DARK, PURPLE, LAVENDER, PINK, WHITE,
@@ -22,10 +24,15 @@ FONT = next((_fonts[f.casefold()] for f in
 EXPRESSION_DIR = STUDENT_IMAGE.parent / "expressions"
 EXPRESSION_ASSETS = {
     "student": {
-        "confused": EXPRESSION_DIR / "obscure_confused.png",
-        "questioning": EXPRESSION_DIR / "obscure_questioning.png",
+        "confused": EXPRESSION_DIR / "obscure_thoughtful.png",
+        "questioning": EXPRESSION_DIR / "obscure_thoughtful.png",
+        **{pose: EXPRESSION_DIR / f"obscure_{pose}.png"
+           for pose in ("speaking", "thoughtful", "surprised", "blink", "happy", "thumbs_up")},
     },
-    "robot": {},  # Add approved Zeno variants here when available.
+    "robot": {
+        pose: EXPRESSION_DIR / f"zeno_{pose}.png"
+        for pose in ("speaking", "thoughtful", "surprised", "blink", "happy")
+    },
 }
 MASTER_ASSETS = {"student": STUDENT_IMAGE, "robot": ROBOT_IMAGE}
 
@@ -72,12 +79,15 @@ class AIUniverseFoundations(Scene):
     """First milestone only. Stable dialogue IDs make later audio integration easy."""
 
     def construct(self):
+        if os.getenv("LWO_DISABLE_VOICEOVER") != "1":
+            preflight()
         self.camera.background_color = BG
         self.caption = None
         self.dialogue_ids = set()
         self.characters = {}
-        missing = [path for poses in EXPRESSION_ASSETS.values()
-                   for path in poses.values() if not path.is_file()]
+        missing = sorted({path for path in EXPRESSION_ASSETS["student"].values()
+                          if not path.is_file()})
+        # Zeno keeps the original robot artwork until its own sheet is approved.
         if missing:
             message = ("Missing approved expression assets: "
                        + ", ".join(str(p.name) for p in missing)
@@ -159,7 +169,7 @@ class AIUniverseFoundations(Scene):
         return .45 if motion in ("question","think") else (.42 if motion == "realize" else .40)
 
     def say(self, key, who, line, *animations, seconds=None, pose=None, reaction=None):
-        """Silent dialogue beat with optional approved pose and timed reaction."""
+        """Narrated dialogue beat with optional approved pose and timed reaction."""
         if key in self.dialogue_ids:
             raise ValueError("Duplicate dialogue ID: " + key)
         self.dialogue_ids.add(key)
@@ -181,6 +191,25 @@ class AIUniverseFoundations(Scene):
         self.add(current)
         self.caption = current
         duration = seconds if seconds is not None else max(2.4, len(line.split())/2.9+.4)
+        if os.getenv("LWO_DISABLE_VOICEOVER") != "1":
+            audio = clip_path(line, who)
+            duration = max(duration, audio_duration(audio) + .15)
+            self.add_sound(str(audio))
+        # Preserve explicit emotional poses; otherwise use the speaking sprite.
+        if who == "student":
+            if key in ("intro-02", "intro-04"):
+                pose = "surprised"
+            elif key == "end-06":
+                pose = "thumbs_up"
+            elif reaction == "realize":
+                pose = "happy"
+            elif pose == "neutral":
+                pose = "speaking"
+        pose = pose or {"question": "surprised", "think": "thoughtful",
+                        "realize": "happy", "nod": "speaking"}.get(reaction, "speaking")
+        listener = "robot" if who == "student" else "student"
+        self.react(listener, "neutral")
+        reaction = reaction or ("question" if line.rstrip().endswith("?") else "nod")
         # Keep the total dialogue duration unchanged after adding reactions.
         start = self.time
         if pose is not None or reaction is not None:
@@ -189,8 +218,23 @@ class AIUniverseFoundations(Scene):
         if animations:
             self.play(*animations, run_time=min(1.10, remaining))
         remaining = duration-(self.time-start)
+        # A speaker entering during the teaching animation can now switch poses.
+        self.react(who, pose)
+        if remaining > .9 and who in self.characters:
+            # A brief blink between phrases; optional reviewed artwork only.
+            blink = EXPRESSION_ASSETS[who].get("blink")
+            if blink and blink.is_file():
+                self.wait(.35)
+                self.react(who, "blink")
+                self.wait(max(1, ceil(.12 * config.frame_rate)) / config.frame_rate)
+                self.react(who, pose)
+            elif remaining > 1.1:
+                # Keep the original artwork lively even before variants exist.
+                self.react(who, None, "nod")
+        remaining = duration-(self.time-start)
         if remaining > 0:
-            self.wait(max(1/config.frame_rate, remaining))
+            self.wait(ceil(remaining * config.frame_rate) / config.frame_rate)
+        self.react(who, "neutral")
 
     def opening(self):
         self.stage()
