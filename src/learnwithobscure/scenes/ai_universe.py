@@ -24,10 +24,10 @@ FONT = next((_fonts[f.casefold()] for f in
 EXPRESSION_DIR = STUDENT_IMAGE.parent / "expressions"
 EXPRESSION_ASSETS = {
     "student": {
-        "confused": EXPRESSION_DIR / "obscure_confused.png",
-        "questioning": EXPRESSION_DIR / "obscure_questioning.png",
+        "confused": EXPRESSION_DIR / "obscure_thoughtful.png",
+        "questioning": EXPRESSION_DIR / "obscure_thoughtful.png",
         **{pose: EXPRESSION_DIR / f"obscure_{pose}.png"
-           for pose in ("speaking", "thoughtful", "surprised", "blink", "happy")},
+           for pose in ("speaking", "thoughtful", "surprised", "blink", "happy", "thumbs_up")},
     },
     "robot": {
         pose: EXPRESSION_DIR / f"zeno_{pose}.png"
@@ -85,8 +85,9 @@ class AIUniverseFoundations(Scene):
         self.caption = None
         self.dialogue_ids = set()
         self.characters = {}
-        missing = [path for poses in EXPRESSION_ASSETS.values()
-                   for path in poses.values() if not path.is_file()]
+        missing = sorted({path for path in EXPRESSION_ASSETS["student"].values()
+                          if not path.is_file()})
+        # Zeno keeps the original robot artwork until its own sheet is approved.
         if missing:
             message = ("Missing approved expression assets: "
                        + ", ".join(str(p.name) for p in missing)
@@ -195,6 +196,15 @@ class AIUniverseFoundations(Scene):
             duration = max(duration, audio_duration(audio) + .15)
             self.add_sound(str(audio))
         # Preserve explicit emotional poses; otherwise use the speaking sprite.
+        if who == "student":
+            if key in ("intro-02", "intro-04"):
+                pose = "surprised"
+            elif key == "end-06":
+                pose = "thumbs_up"
+            elif reaction == "realize":
+                pose = "happy"
+            elif pose == "neutral":
+                pose = "speaking"
         pose = pose or {"question": "surprised", "think": "thoughtful",
                         "realize": "happy", "nod": "speaking"}.get(reaction, "speaking")
         listener = "robot" if who == "student" else "student"
