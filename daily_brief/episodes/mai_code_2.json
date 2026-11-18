@@ -1,0 +1,56 @@
+{
+  "date": "19 NOV 2026",
+  "id": "2026-11-19-mai-code-2",
+  "source": "https://github.blog/changelog/2026-11-17-mai-code-2-and-mai-code-2-flash-in-github-copilot/",
+  "segments": [
+    {
+      "visual": "hook",
+      "title": "MICROSOFT JOINS THE AI CODING BATTLE",
+      "caption": "Two new coding models.",
+      "speech": "Microsoft just raised the stakes in the AI coding battle. Should OpenAI and Anthropic be worried?",
+      "seconds": 6
+    },
+    {
+      "visual": "reveal",
+      "title": "MAI CODE 2 + CODE 2 FLASH",
+      "caption": "Announced November seventeenth.",
+      "speech": "At Ignite, Microsoft unveiled two new coding models: M A I Code Two and Code Two Flash.",
+      "seconds": 7
+    },
+    {
+      "visual": "complex",
+      "title": "CODE 2",
+      "caption": "Complex fixes across your codebase.",
+      "speech": "Code Two is built for the tough stuff. Finding bugs, refactoring applications, and making changes across multiple files.",
+      "seconds": 8
+    },
+    {
+      "visual": "flash",
+      "title": "CODE 2 FLASH",
+      "caption": "Fast, cost-efficient everyday tasks.",
+      "speech": "Flash is the lightweight option for quick fixes, code explanations and everyday edits. Think speed and efficiency.",
+      "seconds": 7
+    },
+    {
+      "visual": "picker",
+      "title": "GITHUB COPILOT",
+      "caption": "Access varies by Copilot plan.",
+      "speech": "Both are available in GitHub Copilot for eligible users. Even the free tier can access Code Two Flash, subject to usage limits.",
+      "seconds": 9
+    },
+    {
+      "visual": "choice",
+      "title": "THE RIGHT MODEL FOR THE JOB",
+      "caption": "More options, not a proven winner.",
+      "speech": "The real question is whether developers can get the quality they need at a lower cost. More competition means more choices.",
+      "seconds": 8
+    },
+    {
+      "visual": "outro",
+      "title": "STAY CURIOUS, CODE CREW!",
+      "caption": "Subscribe to Learn With Obscure.",
+      "speech": "For more tech news like this every day, subscribe to Learn With Obscure! I'm Zeno Sensei. Stay curious, Code Crew!",
+      "seconds": 9
+    }
+  ]
+}
