@@ -253,7 +253,7 @@ class AIUniverseFoundations(Scene):
                  "Generative AI, agentic AI, LLMs, RAG... wasn't everything just called AI yesterday?",
                  LaggedStart(*[GrowFromCenter(c) for c in chips], lag_ratio=.12),
                  pose="questioning", reaction="question")
-        self.say("intro-02","student","ZENOOOO!",
+        self.say("intro-02","student","ZENOOO SENSEIII!",
                  student.animate.shift(UP*.23).scale(1.065), seconds=2.2,
                  pose="confused", reaction="question")
         robot = self.character("robot",3.45,4.25,-.12)
@@ -303,7 +303,7 @@ class AIUniverseFoundations(Scene):
         target = board[5].get_center()
         enemy = VGroup(Circle(radius=.23,color=DARK,fill_color=DARK,fill_opacity=1),
                        txt("P",23,WHITE,width=.4,height=.38)).move_to(target)
-        chess = tag("Chess search",26,fill=WHITE).next_to(board,DOWN,buff=.24)
+        chess = tag("Basic chess search",26,fill=WHITE).next_to(board,DOWN,buff=.24)
         idea = VGroup(txt("RULES",25,PURPLE),txt("+",25),txt("SEARCH",25,PURPLE))
         idea.arrange(DOWN,buff=.16).move_to(pos(1.1,.7))
         decisions = VGroup(*[tag(v,19) for v in ("Move A","Move B","Move C")])
@@ -314,7 +314,7 @@ class AIUniverseFoundations(Scene):
         self.say("ai-02","student","So every AI learns from data?",
                  pose="questioning", reaction="question")
         self.say("ai-03","robot",
-                 "Not necessarily. A chess program can search possible moves using predefined rules, without learning from data.",
+                 "Not necessarily. A basic chess bot can use predefined rules and search possible moves without learning from data.",
                  FadeIn(idea),LaggedStart(*[FadeIn(d,shift=LEFT*.25) for d in decisions],
                                          lag_ratio=.15), reaction="nod")
         # The knight marker moves two up and one right; this is a legal capture.
@@ -322,6 +322,8 @@ class AIUniverseFoundations(Scene):
             origin2,origin2+UP*sz*2,target])
         self.play(Create(route),run_time=.52)
         self.play(MoveAlongPath(start,route),FadeOut(enemy),run_time=.65)
+        self.say("ai-03b","robot",
+                 "Advanced engines like Stockfish go further, using trained neural networks and sophisticated search to evaluate moves.")
         self.say("ai-04","student","So AI is the big umbrella. Learning is optional!",
                  pose="neutral", reaction="realize")
         self.say("ai-05","robot","Exactly. Now imagine rules that are hard to write by hand.",
@@ -440,6 +442,18 @@ class AIUniverseFoundations(Scene):
                  pose="neutral", reaction="realize")
         self.say("dl-06","robot","Exactly. Not every machine-learning model is a deep neural network.")
 
+    def quiz_countdown(self):
+        """Five seconds to think after the spoken options, without revealing the answer."""
+        count = txt("5",45,PURPLE).move_to(pos(4.55,.55))
+        self.play(FadeIn(count),run_time=.2)
+        for n in (4,3,2,1):
+            self.wait(.8)
+            nxt = txt(str(n),45,PURPLE).move_to(count)
+            self.play(ReplacementTransform(count,nxt),run_time=.2)
+            count = nxt
+        self.wait(.8)
+        self.play(FadeOut(count),run_time=.2)
+
     def recap(self):
         self.stage()
         self.title("How the pieces fit together")
@@ -463,7 +477,7 @@ class AIUniverseFoundations(Scene):
                  Indicate(d,color=WHITE,scale_factor=1.04), reaction="nod")
         self.stage()
         heading = self.title("QUICK CHALLENGE")
-        question = txt("A chess program uses rules and search.\nIt does not learn from data.",36,
+        question = txt("A basic chess program uses rules and search.\nIt does not learn from data. What is it?",36,
                        DARK,width=12.1,height=1.30)
         question.next_to(heading, DOWN, buff=.42).set_x(0)
         # Lay out the answers from the actual question bounds, not a fixed y.
@@ -486,20 +500,17 @@ class AIUniverseFoundations(Scene):
         if (options.get_top()[1] > question.get_bottom()[1] - .40
                 or options.get_bottom()[1] < caption_top + .22):
             raise ValueError("Quick challenge layout overlaps question or caption")
-        self.play(FadeIn(question),LaggedStart(*[FadeIn(o,shift=UP*.12) for o in options],
-                                               lag_ratio=.15),run_time=.9)
-        count = txt("3",46,PURPLE).next_to(options, RIGHT, buff=.85)
-        self.play(GrowFromCenter(count),run_time=.3)
-        for n in (2,1):
-            self.wait(.72)
-            nxt=txt(str(n),46,PURPLE).move_to(count)
-            self.play(ReplacementTransform(count,nxt),run_time=.18)
-            count=nxt
-        self.wait(.72)
-        self.play(FadeOut(count),options[0][0].animate.set_fill(PINK,opacity=1),
-                  options[1].animate.set_opacity(.42),options[2].animate.set_opacity(.42),
-                  run_time=.5)
-        self.say("recap-05","robot","It's AI! Learning from data is not required.")
+        quiz_student = self.character("student",2.12,-5.85,-1.32,max_width=1.5)
+        quiz_robot = self.character("robot",2.12,5.85,-1.32,max_width=1.5)
+        self.say("recap-q-ask","robot",
+                 "Obscure, here's a challenge for you and the Code Crew! A basic chess program uses rules and search, but does not learn from data. Is it A, AI only, B, machine learning, or C, deep learning?",
+                 FadeIn(quiz_student),FadeIn(quiz_robot),FadeIn(question),
+                 LaggedStart(*[FadeIn(o,shift=UP*.12) for o in options],lag_ratio=.15))
+        self.quiz_countdown()
+        self.say("recap-q-answer","student","Hmm... option A! It's AI, but not machine learning.",pose="thoughtful")
+        self.say("recap-05","robot","That's right! Learning from data is not required for artificial intelligence.",
+                 options[0][0].animate.set_fill(PINK,opacity=1),
+                 options[1].animate.set_opacity(.42),options[2].animate.set_opacity(.42),reaction="nod")
         self.stage()
         self.title("NEXT  /  What can AI actually do?")
         pair=VGroup(tag("PREDICT",40,width=5.8),tag("GENERATE",40,fill=PINK,width=5.8))
