@@ -1,0 +1,56 @@
+{
+  "date": "20 NOV 2026",
+  "id": "2026-11-20-anthropic-ipo",
+  "source": "https://www.reuters.com/business/finance/anthropics-historic-debut-put-ais-promise-peril-wall-st-test-2026-11-19/",
+  "segments": [
+    {
+      "visual": "hook",
+      "title": "CLAUDE'S CREATOR MAKES HISTORY",
+      "caption": "The biggest IPO on record.",
+      "speech": "What happens when the company behind Claude makes stock market history?",
+      "seconds": 5
+    },
+    {
+      "visual": "record",
+      "title": "$81.3 BILLION",
+      "caption": "Gross IPO offering size.",
+      "speech": "Anthropic priced the largest initial public offering in history, at over eighty-one billion dollars.",
+      "seconds": 7
+    },
+    {
+      "visual": "explain",
+      "title": "WHAT IS AN IPO?",
+      "caption": "Private company → public shares.",
+      "speech": "But wait, what's an I P O? It's when a company offers its shares to public investors for the first time.",
+      "seconds": 9
+    },
+    {
+      "visual": "ticker",
+      "title": "NASDAQ: ANT",
+      "caption": "$83 IPO price, not live price.",
+      "speech": "Anthropic began trading on Nasdaq on November nineteenth, under the symbol A N T. Its offering price was eighty-three dollars per share.",
+      "seconds": 9
+    },
+    {
+      "visual": "compute",
+      "title": "WHY IT MATTERS",
+      "caption": "More resources for AI development.",
+      "speech": "Building powerful AI models takes enormous amounts of computing power and research. This could give Anthropic more resources to compete.",
+      "seconds": 9
+    },
+    {
+      "visual": "caveat",
+      "title": "MONEY ≠ BETTER AI",
+      "caption": "Funding is not a quality benchmark.",
+      "speech": "But a bigger valuation doesn't automatically mean better AI!",
+      "seconds": 5
+    },
+    {
+      "visual": "outro",
+      "title": "STAY CURIOUS, CODE CREW!",
+      "caption": "Subscribe to Learn With Obscure.",
+      "speech": "For more tech news like this every day, subscribe to Learn With Obscure! I'm Zeno Sensei. Stay curious, Code Crew!",
+      "seconds": 9
+    }
+  ]
+}
