@@ -229,9 +229,16 @@ class AIUniverseFull(AICapabilities):
         self.title("ONE LAST CHALLENGE")
         question=txt("A coding assistant retrieves project docs,\nruns tests and revises its plan. What fits?",34,width=11.6,height=1.2).move_to(UP*1.65)
         options=VGroup(*[tag(s,27,width=7.3) for s in ("A  /  RAG only","B  /  Agent only","C  /  RAG + tool-using agent")]).arrange(DOWN,buff=.2).move_to(DOWN*.25)
-        self.play(FadeIn(question),FadeIn(options),run_time=.6)
-        self.wait(3)
-        self.say("end-03","robot","C! Retrieval can ground the answer, and a tool-using agent can act and adapt. One system can combine several concepts.",options[2][0].animate.set_fill(PINK,opacity=1))
+        quiz_student = self.character("student",2.12,-5.85,-1.32,max_width=1.5)
+        quiz_robot = self.character("robot",2.12,5.85,-1.32,max_width=1.5)
+        self.say("end-q-ask","robot",
+                 "One last challenge for you and the Code Crew! A coding assistant retrieves project documents, runs tests, and revises its plan. What fits? A, RAG only, B, agent only, or C, RAG plus a tool-using agent?",
+                 FadeIn(quiz_student),FadeIn(quiz_robot),FadeIn(question),FadeIn(options))
+        self.quiz_countdown()
+        self.say("end-q-answer","student","That's C! It combines RAG with a tool-using agent.",pose="thoughtful",reaction="realize")
+        self.say("end-03","robot","Correct! Retrieval can ground the answer, and a tool-using agent can act and adapt. One system can combine several concepts.",
+                 options[2][0].animate.set_fill(PINK,opacity=1),
+                 options[0].animate.set_opacity(.45),options[1].animate.set_opacity(.45),reaction="nod")
         self.stage()
         self.title("NEXT  /  Build an AI agent")
         student=self.character("student",3,-3.8,-.85,max_width=2.8)

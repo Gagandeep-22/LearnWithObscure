@@ -185,18 +185,17 @@ class AICapabilities(AIUniverseFoundations):
         options = VGroup(*[tag(t,26,width=7.2) for t in
                            ("A  /  Speech synthesis only","B  /  Generative AI only",
                             "C  /  Both")]).arrange(DOWN,buff=.24).move_to(DOWN*.38)
-        self.play(FadeIn(question),LaggedStart(*[FadeIn(o) for o in options],lag_ratio=.13),run_time=.8)
-        count = txt("3",45,PURPLE).next_to(options,RIGHT,buff=.65)
-        self.play(FadeIn(count),run_time=.2)
-        for n in (2,1):
-            self.wait(.8)
-            nxt = txt(str(n),45,PURPLE).move_to(count)
-            self.play(ReplacementTransform(count,nxt),run_time=.2)
-            count = nxt
-        self.wait(.8)
-        self.play(FadeOut(count),options[2][0].animate.set_fill(PINK,opacity=1),
-                  options[0].animate.set_opacity(.45),options[1].animate.set_opacity(.45),run_time=.45)
-        self.say("cap-q01","robot","Both! Generative AI describes what is created, and speech synthesis describes the specific task.")
+        quiz_student = self.character("student",2.12,-5.85,-1.32,max_width=1.5)
+        quiz_robot = self.character("robot",2.12,5.85,-1.32,max_width=1.5)
+        self.say("cap-q-ask","robot",
+                 "Ready for another challenge, Obscure? Code Crew, think along with him! An AI creates a spoken answer. Which capabilities are involved? A, speech synthesis only, B, generative AI only, or C, both?",
+                 FadeIn(quiz_student),FadeIn(quiz_robot),FadeIn(question),
+                 LaggedStart(*[FadeIn(o) for o in options],lag_ratio=.13))
+        self.quiz_countdown()
+        self.say("cap-q-answer","student","I'll go with C, Sensei. Both!",pose="thoughtful",reaction="realize")
+        self.say("cap-q01","robot","Exactly right! Generative AI describes what is created, and speech synthesis describes the specific task.",
+                 options[2][0].animate.set_fill(PINK,opacity=1),
+                 options[0].animate.set_opacity(.45),options[1].animate.set_opacity(.45),reaction="nod")
         self.stage()
         self.title("NEXT  /  Models behind the capabilities")
         student = self.character("student",2.3,-4.5,-1.15)
