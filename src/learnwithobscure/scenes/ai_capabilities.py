@@ -67,13 +67,15 @@ class AICapabilities(AIUniverseFoundations):
                        txt("AI",35,DARK)).move_to(pos(0,1.05))
         a = arrow(pos(-1.3,1.05),pos(-.8,1.05))
         b = arrow(pos(.8,1.05),pos(1.68,1.05))
-        helmet = Circle(radius=.85,color=PURPLE,fill_color=WHITE,fill_opacity=1)
-        face = Circle(radius=.49,color=DARK,fill_color=LAVENDER,fill_opacity=1)
-        ears = VGroup(*[Triangle(color=DARK,fill_color=LAVENDER,fill_opacity=1)
-                        .scale(.23).move_to(pos(x,.42)) for x in (-.32,.32)])
-        eyes = VGroup(*[Dot(pos(x,.06),color=DARK,radius=.045) for x in (-.17,.17)])
-        nose = Dot(pos(0,-.12),color=PINK,radius=.055)
-        art = VGroup(helmet,ears,face,eyes,nose).move_to(pos(3.05,1.05))
+        from pathlib import Path
+        import os
+        assets = Path(__file__).resolve().parents[3] / "assets" / "ai_universe"
+        image_path = assets / "astronaut_kitten.png"
+        meow_path = assets / "kitten_meow.wav"
+        if not image_path.is_file():
+            raise FileNotFoundError(f"Missing astronaut kitten: {image_path}")
+        art = ImageMobject(str(image_path)).scale_to_fit_width(3.5)
+        art.move_to(pos(3.5,1.05))
         outputs = VGroup(*[tag(t,22) for t in ("TEXT","IMAGES","AUDIO","CODE")])
         outputs.arrange(RIGHT,buff=.23).move_to(DOWN*1.15)
         self.say("cap-g01","student","What if I want AI to draw a cat in a spacesuit?",
@@ -81,8 +83,15 @@ class AICapabilities(AIUniverseFoundations):
         self.say("cap-g02","robot","Generative AI creates content from patterns learned during training.",
                  GrowArrow(a),GrowFromCenter(model))
         self.say("cap-g03","robot","Depending on the model, it can create images, text, audio or code.",
-                 GrowArrow(b),GrowFromCenter(art),
+                 GrowArrow(b),
                  LaggedStart(*[FadeIn(o,shift=UP*.15) for o in outputs],lag_ratio=.12))
+        # Reveal only after Zeno's narration finishes, so the meow is isolated.
+        if os.getenv("LWO_DISABLE_VOICEOVER") != "1":
+            if not meow_path.is_file():
+                raise FileNotFoundError(f"Missing kitten meow: {meow_path}")
+            self.add_sound(str(meow_path), gain=-4)
+        self.play(FadeIn(art, scale=0.85), run_time=.4)
+        self.wait(1.7)
         self.say("cap-g04","student","Finally, a cat that takes its career seriously.",pose="neutral",reaction="realize")
         self.say("cap-g05","robot","And generated content can still contain mistakes.",reaction="nod")
 
