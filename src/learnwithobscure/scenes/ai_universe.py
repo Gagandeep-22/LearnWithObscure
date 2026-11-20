@@ -253,7 +253,7 @@ class AIUniverseFoundations(Scene):
                  "Generative AI, agentic AI, LLMs, RAG... wasn't everything just called AI yesterday?",
                  LaggedStart(*[GrowFromCenter(c) for c in chips], lag_ratio=.12),
                  pose="questioning", reaction="question")
-        self.say("intro-02","student","ZENOOO SENSEIII!",
+        self.say("intro-02","student","Zeno Sensei!",
                  student.animate.shift(UP*.23).scale(1.065), seconds=2.2,
                  pose="confused", reaction="question")
         robot = self.character("robot",3.45,4.25,-.12)
