@@ -17,7 +17,8 @@ MODEL = os.getenv("LWO_GEMINI_TTS_MODEL", "gemini-3.8-flash-lite-tts")
 VOICES = {"student": "Achird", "robot": "Leda"}
 
 def clip_path(line, who):
-    key = hashlib.sha256(f"{MODEL}:{VOICES[who]}:{line}".encode("utf-8")).hexdigest()[:20]
+    revision = "anime-call-v2" if who == "student" and line == "Zeno Sensei!" else ""
+    key = hashlib.sha256(f"{MODEL}:{VOICES[who]}:{line}:{revision}".encode("utf-8")).hexdigest()[:20]
     return AUDIO_DIR / f"{key}.wav"
 
 def duration(path):
@@ -121,12 +122,15 @@ def request_audio(line, who, path, key=None):
         # Only the introductory call needs character-specific direction.
         # Never include this direction in the on-screen dialogue.
         transcript = (
-            "Perform only this spoken line, with no added words: 'Zeno Sensei!' "
-            "Obscure is excitedly calling to his beloved teacher. "
-            "Say 'Zeno' lightly and naturally, then place the expressive "
-            "rising emphasis on 'Sensei' (SEN-sei), as an affectionate call. "
-            "Do not stretch Zeno, spell any word, or shout both words equally. "
-            "Spoken line: Zeno Sensei!"
+            "Voice acting direction: Obscure is an overwhelmed, confused anime "
+            "student surrounded by baffling AI, ML and RAG terms. He suddenly "
+            "calls out to his mentor for help in a playful, slightly panicked "
+            "anime-style cry. Say 'Zeno' fairly quickly and naturally; put the "
+            "big emotional emphasis on 'SEN' in 'Sensei', and gently sustain "
+            "the final 'ei' vowel like 'Senseiii!' for a pleading finish. "
+            "The call should be expressive but never angry or robotic. "
+            "Speak ONLY these words, with no direction spoken aloud: "
+            "Zeno Senseiii!"
         )
     else:
         transcript = line if not MODEL.endswith("-preview") else "Read aloud exactly: " + line
