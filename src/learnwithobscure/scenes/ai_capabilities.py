@@ -97,27 +97,48 @@ class AICapabilities(AIUniverseFoundations):
 
     def vision(self):
         self.setup_topic("06  /  Computer Vision", "Interpret images and video")
-        ground = Line(pos(-4,-.65),pos(4,-.65),color=DARK,stroke_width=3)
-        car = VGroup(box(1.6,.62,fill=LAVENDER),
-                     *[Circle(radius=.16,color=DARK,fill_opacity=1).move_to(pos(x,-.35)) for x in (-.49,.49)])
-        car.move_to(pos(-2.8,-.2))
-        person = VGroup(Circle(radius=.16,color=PURPLE,fill_opacity=1).move_to(UP*.58),
-                        Line(UP*.4,DOWN*.1,color=PURPLE,stroke_width=5),
-                        Line(UP*.2,pos(-.32,-.05),color=PURPLE,stroke_width=5),
-                        Line(UP*.2,pos(.32,-.05),color=PURPLE,stroke_width=5),
-                        Line(DOWN*.1,pos(-.22,-.52),color=PURPLE,stroke_width=5),
-                        Line(DOWN*.1,pos(.22,-.52),color=PURPLE,stroke_width=5)).move_to(pos(2.6,.1))
-        detection = SurroundingRectangle(person,color=PINK,buff=.17,stroke_width=4)
-        label = tag("Pedestrian",21,fill=WHITE).next_to(detection,UP,buff=.12)
-        self.say("cap-v01","student","Can AI identify what is in a camera image?",
-                 Create(ground),FadeIn(car),FadeIn(person),pose="questioning")
-        self.say("cap-v02","robot","Computer vision can classify images, detect objects or track movement.",
-                 Create(detection),FadeIn(label))
-        self.say("cap-v03","robot","For example, a driving system may detect a pedestrian ahead.",
-                 car.animate.shift(RIGHT*1.5))
-        self.say("cap-v04","student","Seeing the pedestrian is not the same as knowing how to drive?",
-                 pose="questioning",reaction="think")
-        self.say("cap-v05","robot","Right. Detection is one capability in a larger system.",reaction="nod")
+        from pathlib import Path
+        assets = Path(__file__).resolve().parents[3] / "assets" / "ai_universe"
+        car_path = assets / "ai_car_side.png"
+        pedestrian_path = assets / "obscure_pedestrian_side.png"
+
+        ground = Line(pos(-5.2, -.85), pos(5.2, -.85),
+                      color=DARK, stroke_width=3)
+        if car_path.is_file() and pedestrian_path.is_file():
+            # Illustrated, strictly side-on sprites, independently animatable.
+            car = ImageMobject(str(car_path)).scale_to_fit_width(3.35)
+            person = ImageMobject(str(pedestrian_path)).scale_to_fit_height(2.2)
+            car.move_to(pos(-3.15, 0)).align_to(ground, DOWN)
+            person.move_to(pos(2.65, 0)).align_to(ground, DOWN)
+        else:
+            # Keep the scene renderable until the approved artwork is installed.
+            car = VGroup(box(1.6, .62, fill=LAVENDER),
+                         *[Circle(radius=.16, color=DARK, fill_opacity=1).move_to(pos(x, -.35))
+                           for x in (-.49, .49)])
+            car.move_to(pos(-2.8, -.2))
+            person = VGroup(
+                Circle(radius=.16, color=PURPLE, fill_opacity=1).move_to(UP*.58),
+                Line(UP*.4, DOWN*.1, color=PURPLE, stroke_width=5),
+                Line(UP*.2, pos(-.32, -.05), color=PURPLE, stroke_width=5),
+                Line(UP*.2, pos(.32, -.05), color=PURPLE, stroke_width=5),
+                Line(DOWN*.1, pos(-.22, -.52), color=PURPLE, stroke_width=5),
+                Line(DOWN*.1, pos(.22, -.52), color=PURPLE, stroke_width=5)
+            ).move_to(pos(2.6, .1))
+
+        detection = SurroundingRectangle(person, color=PINK, buff=.12,
+                                         stroke_width=4)
+        label = tag("Pedestrian", 21, fill=WHITE).next_to(
+            detection, UP, buff=.12)
+        self.say("cap-v01", "student", "Can AI identify what is in a camera image?",
+                 Create(ground), FadeIn(car), FadeIn(person), pose="questioning")
+        self.say("cap-v02", "robot", "Computer vision can classify images, detect objects or track movement.",
+                 Create(detection), FadeIn(label))
+        self.say("cap-v03", "robot", "For example, a driving system may detect a pedestrian ahead.",
+                 car.animate.shift(RIGHT*1.25))
+        self.say("cap-v04", "student", "Seeing the pedestrian is not the same as knowing how to drive?",
+                 pose="questioning", reaction="think")
+        self.say("cap-v05", "robot", "Right. Detection is one capability in a larger system.",
+                 reaction="nod")
 
     def language(self):
         self.setup_topic("07  /  Natural Language Processing", "Work with human language")
