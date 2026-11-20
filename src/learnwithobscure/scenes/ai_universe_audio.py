@@ -158,8 +158,12 @@ def request_audio(line, who, path, key=None):
     save_audio(path, mime, data)
 
 
-def prepare(max_new=8, interval=22, check=False):
+def prepare(max_new=8, interval=22, check=False, only_id=None):
     lines = list(dialogue())
+    if only_id is not None:
+        lines = [item for item in lines if item[0] == only_id]
+        if not lines:
+            raise ValueError(f"Unknown dialogue ID: {only_id}")
     missing = {clip_path(line, who): (key, who, line) for key, who, line in lines
                if not ready(clip_path(line, who))}
     print(f"Model: {MODEL}; voices: {VOICES}")
