@@ -113,11 +113,23 @@ def save_audio(path, mime, data):
         temporary.unlink(missing_ok=True)
 
 
-def request_audio(line, who, path):
+def request_audio(line, who, path, key=None):
     """Call the Gemini Developer API directly; no Manim/SoX/SDK required."""
     if not re.fullmatch(r"gemini-[a-zA-Z0-9.-]+", MODEL):
         raise ValueError("Invalid LWO_GEMINI_TTS_MODEL.")
-    transcript = line if not MODEL.endswith("-preview") else "Read aloud exactly: " + line
+    if key == "intro-02":
+        # Only the introductory call needs character-specific direction.
+        # Never include this direction in the on-screen dialogue.
+        transcript = (
+            "Perform only this spoken line, with no added words: 'Zeno Sensei!' "
+            "Obscure is excitedly calling to his beloved teacher. "
+            "Say 'Zeno' lightly and naturally, then place the expressive "
+            "rising emphasis on 'Sensei' (SEN-sei), as an affectionate call. "
+            "Do not stretch Zeno, spell any word, or shout both words equally. "
+            "Spoken line: Zeno Sensei!"
+        )
+    else:
+        transcript = line if not MODEL.endswith("-preview") else "Read aloud exactly: " + line
     body = {
         "contents": [{"parts": [{"text": transcript}]}],
         "generationConfig": {
@@ -174,7 +186,7 @@ def prepare(max_new=8, interval=22, check=False):
         print(f"Requesting {key} ({VOICES[who]})...", flush=True)
         last = time.monotonic()
         try:
-            request_audio(line, who, path)
+            request_audio(line, who, path, key=key)
             duration(path)
         except Exception:
             if path.exists() and not ready(path):
