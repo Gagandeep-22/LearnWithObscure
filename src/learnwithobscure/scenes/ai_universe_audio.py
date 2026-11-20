@@ -17,8 +17,10 @@ MODEL = os.getenv("LWO_GEMINI_TTS_MODEL", "gemini-3.8-flash-lite-tts")
 VOICES = {"student": "Achird", "robot": "Leda"}
 
 def clip_path(line, who):
-    revision = "anime-call-v2" if who == "student" and line == "Zeno Sensei!" else ""
-    key = hashlib.sha256(f"{MODEL}:{VOICES[who]}:{line}:{revision}".encode("utf-8")).hexdigest()[:20]
+    cache_key = f"{MODEL}:{VOICES[who]}:{line}"
+    if who == "student" and line == "Zeno Sensei!":
+        cache_key += ":anime-call-v2"
+    key = hashlib.sha256(cache_key.encode("utf-8")).hexdigest()[:20]
     return AUDIO_DIR / f"{key}.wav"
 
 def duration(path):
