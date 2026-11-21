@@ -25,9 +25,9 @@
       "seconds": 8
     },
     {
-      "visual": "demo",
-      "title": "REAL AI DEMONSTRATIONS",
-      "caption": "See what Google demonstrated.",
+      "visual": "illustrated_workflow",
+      "title": "AN AI CODING WORKFLOW",
+      "caption": "Illustrative workflow, not a product demo.",
       "speech": "Imagine giving an AI a complicated development task and having it work through multiple steps!",
       "seconds": 8
     },
