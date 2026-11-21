@@ -21,6 +21,20 @@ class AIUniverseFull(AICapabilities):
                        self.multi_agent, self.agi, self.final_recap):
             method()
         self.wait(1)
+        self.subscribe_outro()
+
+    def subscribe_outro(self):
+        # A separate final beat; all existing scenes and dialogue remain intact.
+        self.stage()
+        self.title("JOIN THE CODE CREW")
+        student = self.character("student", 3.2, -3.6, -.65, max_width=2.8)
+        subscribe = tag("SUBSCRIBE  /  LEARN WITH OBSCURE", 29, width=7.2, fill=PINK).move_to(pos(2.0, .55))
+        next_up = txt("NEXT UP: LET'S BUILD AN AI AGENT!", 27, PURPLE, width=7.5).move_to(pos(2.0, -.45))
+        self.say("outro-subscribe", "student",
+                 "Want to see me build an AI agent from scratch? Hit subscribe to Learn With Obscure, and let's figure it out together!",
+                 FadeIn(student), GrowFromCenter(subscribe), FadeIn(next_up),
+                 pose="happy", reaction="realize")
+        self.wait(1)
 
     def foundations(self):
         # Invoke the original construct on this same scene, retaining dialogue IDs.

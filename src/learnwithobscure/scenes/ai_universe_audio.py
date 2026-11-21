@@ -19,7 +19,7 @@ VOICES = {"student": "Achird", "robot": "Leda"}
 def clip_path(line, who):
     cache_key = f"{MODEL}:{VOICES[who]}:{line}"
     if who == "student" and line == "Zeno Sensei!":
-        cache_key += ":anime-call-v2"
+        cache_key += ":concerned-call-v3"
     key = hashlib.sha256(cache_key.encode("utf-8")).hexdigest()[:20]
     return AUDIO_DIR / f"{key}.wav"
 
@@ -124,15 +124,16 @@ def request_audio(line, who, path, key=None):
         # Only the introductory call needs character-specific direction.
         # Never include this direction in the on-screen dialogue.
         transcript = (
-            "Voice acting direction: Obscure is an overwhelmed, confused anime "
-            "student surrounded by baffling AI, ML and RAG terms. He suddenly "
-            "calls out to his mentor for help in a playful, slightly panicked "
-            "anime-style cry. Say 'Zeno' fairly quickly and naturally; put the "
-            "big emotional emphasis on 'SEN' in 'Sensei', and gently sustain "
-            "the final 'ei' vowel like 'Senseiii!' for a pleading finish. "
-            "The call should be expressive but never angry or robotic. "
+            "Voice acting direction: Obscure is genuinely confused and worried "
+            "by a flood of unfamiliar AI terms. In one sudden, urgent call, he "
+            "shouts for his trusted mentor to help: 'Zeno Sensei!' Sound concerned, "
+            "bewildered and a little desperate, as though he needs an explanation "
+            "right now. Start 'Zeno' with a startled intake of breath, then raise "
+            "the intensity on 'Sensei!' The delivery must be a natural, emphatic "
+            "shout, not a sing-song or playful anime catchphrase. Do not sound "
+            "angry, cheerful, robotic or melodramatic. "
             "Speak ONLY these words, with no direction spoken aloud: "
-            "Zeno Senseiii!"
+            "Zeno Sensei!"
         )
     else:
         transcript = line if not MODEL.endswith("-preview") else "Read aloud exactly: " + line
