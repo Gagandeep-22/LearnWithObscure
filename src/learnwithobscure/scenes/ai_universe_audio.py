@@ -19,7 +19,7 @@ VOICES = {"student": "Achird", "robot": "Leda"}
 def clip_path(line, who):
     cache_key = f"{MODEL}:{VOICES[who]}:{line}"
     if who == "student" and line == "Zeno Sensei!":
-        cache_key += ":structured-style-v7"
+        cache_key += ":bewildered-style-v8"
     key = hashlib.sha256(cache_key.encode("utf-8")).hexdigest()[:20]
     return AUDIO_DIR / f"{key}.wav"
 
@@ -129,9 +129,12 @@ def request_audio(line, who, path, key=None):
             "text": "Zeno Sensei!",
             "speechMetadata": {
                 "style": (
-                    "One continuous urgent, concerned call for help to a trusted "
-                    "teacher. Confused and startled, with strong emotional energy, "
-                    "but natural connected speech and no pause between the two words."
+                    "A lighthearted, bewildered anime student has just heard too many "
+                    "unfamiliar technical terms and calls his teacher for an "
+                    "explanation. Sound puzzled, mildly exasperated and energetic, "
+                    "with a playful upward inflection, never frightened, panicked "
+                    "or distressed. Say both words together as one natural call, "
+                    "without a pause after Zeno."
                 )
             },
         }
