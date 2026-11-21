@@ -72,8 +72,14 @@ class ZenoGemini4Neon(ZenoDailyBrief):
             corner_radius=.16, color=PURPLE, stroke_width=3,
             fill_color=WHITE, fill_opacity=1,
         ).move_to(img)
+        # Keep the opaque white backing behind the photo regardless of
+        # animation insertion order. Without explicit layering, the frame
+        # covers the photo after its FadeIn finishes.
+        frame.set_z_index(1)
+        img.set_z_index(2)
         credit = text("IMAGE: GOOGLE", size=22, height=.42,
                       width=4.2, color=DARK).next_to(frame, DOWN, buff=.12)
+        credit.set_z_index(3)
         return frame, img, credit
 
     def opening(self, segment, pictures):
@@ -119,16 +125,33 @@ class ZenoGemini4Neon(ZenoDailyBrief):
         self.phase(1, FadeIn(zeno), FadeIn(caption(segment["caption"])))
 
     def evidence(self, segment, pictures):
-        heading = headline("SEE THE\nREAL DEMOS", y=5, size=88,
+        # This is a conceptual illustration, NOT a screen recording or
+        # demonstration of Gemini's actual interface. No reused hero image.
+        heading = headline("AN AI CODING\\nWORKFLOW", y=5, size=82,
                            height=2, color=PURPLE)
-        selected = pictures[1] if len(pictures) > 1 else pictures[0]
-        frame, img, credit = self.picture_frame(selected, y=.6, height=5.3)
-        label = pill("GOOGLE ANNOUNCEMENT").scale(.75).move_to(at(0, -3.35))
-        self.phase(.27, GrowFromCenter(heading))
-        self.phase(.72, FadeIn(frame), FadeIn(img, scale=.82),
-                   FadeIn(credit), GrowFromCenter(label))
-        self.phase(1, FadeIn(caption(segment["caption"])),
-                   img.animate.scale(1.02))
+        stages = [
+            pill("DEVELOPMENT TASK", color=PURPLE).scale(.84),
+            pill("PLAN A CHANGE", color=PINK, ink=DARK).scale(.84),
+            pill("WRITE & TEST CODE", color=PURPLE).scale(.84),
+            pill("HUMAN REVIEW", color=PINK, ink=DARK).scale(.84),
+        ]
+        for i, stage in enumerate(stages):
+            stage.move_to(at(0, 2.45 - i * 1.28))
+        arrows = [
+            Arrow(stages[i].get_bottom(), stages[i + 1].get_top(),
+                  buff=.08, color=PURPLE, stroke_width=4)
+            for i in range(len(stages) - 1)
+        ]
+        note = text("ILLUSTRATIVE EXAMPLE — NOT A PRODUCT DEMO",
+                    size=23, width=6.4, height=.8, color=DARK)
+        note.move_to(at(0, -3.3))
+        self.phase(.27, GrowFromCenter(heading), FadeIn(stages[0]))
+        self.phase(.72,
+                   LaggedStart(*[FadeIn(stage, shift=UP*.15)
+                                 for stage in stages[1:]], lag_ratio=.18),
+                   LaggedStart(*[GrowArrow(arr) for arr in arrows],
+                               lag_ratio=.18))
+        self.phase(1, FadeIn(note), FadeIn(caption(segment["caption"])))
 
     def subscribe(self, segment, pictures):
         title = headline("SMARTER AI.\nSMARTER DEVELOPERS.", y=5,
