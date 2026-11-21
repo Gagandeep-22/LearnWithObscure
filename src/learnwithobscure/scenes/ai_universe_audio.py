@@ -19,7 +19,7 @@ VOICES = {"student": "Achird", "robot": "Leda"}
 def clip_path(line, who):
     cache_key = f"{MODEL}:{VOICES[who]}:{line}"
     if who == "student" and line == "Zeno Sensei!":
-        cache_key += ":speech-only-v4"
+        cache_key += ":zeno-paused-v5"
     key = hashlib.sha256(cache_key.encode("utf-8")).hexdigest()[:20]
     return AUDIO_DIR / f"{key}.wav"
 
@@ -123,7 +123,7 @@ def request_audio(line, who, path, key=None):
     if key == "intro-02":
         # Send speech text only. Previous voice-direction prose was spoken aloud
         # by some TTS models even though it said "speak ONLY these words".
-        transcript = "Zeno Sensei!"
+        transcript = "Zeno... Sensei!"
     else:
         transcript = line if not MODEL.endswith("-preview") else "Read aloud exactly: " + line
     body = {
