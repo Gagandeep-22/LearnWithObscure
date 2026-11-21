@@ -19,7 +19,7 @@ VOICES = {"student": "Achird", "robot": "Leda"}
 def clip_path(line, who):
     cache_key = f"{MODEL}:{VOICES[who]}:{line}"
     if who == "student" and line == "Zeno Sensei!":
-        cache_key += ":zeno-edited-v6"
+        cache_key += ":structured-style-v7"
     key = hashlib.sha256(cache_key.encode("utf-8")).hexdigest()[:20]
     return AUDIO_DIR / f"{key}.wav"
 
@@ -121,13 +121,25 @@ def request_audio(line, who, path, key=None):
     if not re.fullmatch(r"gemini-[a-zA-Z0-9.-]+", MODEL):
         raise ValueError("Invalid LWO_GEMINI_TTS_MODEL.")
     if key == "intro-02":
-        # Send speech text only. Previous voice-direction prose was spoken aloud
-        # by some TTS models even though it said "speak ONLY these words".
-        transcript = "Zeno... Sensei!"
+        # Gemini 3.8 treats text as verbatim speech. Put acting instructions in
+        # per-turn speechMetadata.style, never in text or punctuation.
+        if not MODEL.startswith("gemini-3.8-"):
+            raise ValueError("intro-02 structured voice style requires Gemini 3.8 TTS")
+        part = {
+            "text": "Zeno Sensei!",
+            "speechMetadata": {
+                "style": (
+                    "One continuous urgent, concerned call for help to a trusted "
+                    "teacher. Confused and startled, with strong emotional energy, "
+                    "but natural connected speech and no pause between the two words."
+                )
+            },
+        }
     else:
         transcript = line if not MODEL.endswith("-preview") else "Read aloud exactly: " + line
+        part = {"text": transcript}
     body = {
-        "contents": [{"parts": [{"text": transcript}]}],
+        "contents": [{"parts": [part]}],
         "generationConfig": {
             "responseModalities": ["AUDIO"],
             "speechConfig": {"voiceConfig": {"prebuiltVoiceConfig": {
