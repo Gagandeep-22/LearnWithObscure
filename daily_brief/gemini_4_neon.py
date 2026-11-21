@@ -127,7 +127,7 @@ class ZenoGemini4Neon(ZenoDailyBrief):
     def evidence(self, segment, pictures):
         # This is a conceptual illustration, NOT a screen recording or
         # demonstration of Gemini's actual interface. No reused hero image.
-        heading = headline("AN AI CODING\\nWORKFLOW", y=5, size=82,
+        heading = headline("AN AI CODING\nWORKFLOW", y=5, size=82,
                            height=2, color=PURPLE)
         stages = [
             pill("DEVELOPMENT TASK", color=PURPLE).scale(.84),
