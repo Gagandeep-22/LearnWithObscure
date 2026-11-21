@@ -17,7 +17,10 @@ MODEL = os.getenv("LWO_GEMINI_TTS_MODEL", "gemini-3.8-flash-lite-tts")
 VOICES = {"student": "Achird", "robot": "Leda"}
 
 def clip_path(line, who):
-    key = hashlib.sha256(f"{MODEL}:{VOICES[who]}:{line}".encode("utf-8")).hexdigest()[:20]
+    cache_key = f"{MODEL}:{VOICES[who]}:{line}"
+    if who == "student" and line == "Zeno Sensei!":
+        cache_key += ":concerned-call-v3"
+    key = hashlib.sha256(cache_key.encode("utf-8")).hexdigest()[:20]
     return AUDIO_DIR / f"{key}.wav"
 
 def duration(path):
@@ -113,11 +116,27 @@ def save_audio(path, mime, data):
         temporary.unlink(missing_ok=True)
 
 
-def request_audio(line, who, path):
+def request_audio(line, who, path, key=None):
     """Call the Gemini Developer API directly; no Manim/SoX/SDK required."""
     if not re.fullmatch(r"gemini-[a-zA-Z0-9.-]+", MODEL):
         raise ValueError("Invalid LWO_GEMINI_TTS_MODEL.")
-    transcript = line if not MODEL.endswith("-preview") else "Read aloud exactly: " + line
+    if key == "intro-02":
+        # Only the introductory call needs character-specific direction.
+        # Never include this direction in the on-screen dialogue.
+        transcript = (
+            "Voice acting direction: Obscure is genuinely confused and worried "
+            "by a flood of unfamiliar AI terms. In one sudden, urgent call, he "
+            "shouts for his trusted mentor to help: 'Zeno Sensei!' Sound concerned, "
+            "bewildered and a little desperate, as though he needs an explanation "
+            "right now. Start 'Zeno' with a startled intake of breath, then raise "
+            "the intensity on 'Sensei!' The delivery must be a natural, emphatic "
+            "shout, not a sing-song or playful anime catchphrase. Do not sound "
+            "angry, cheerful, robotic or melodramatic. "
+            "Speak ONLY these words, with no direction spoken aloud: "
+            "Zeno Sensei!"
+        )
+    else:
+        transcript = line if not MODEL.endswith("-preview") else "Read aloud exactly: " + line
     body = {
         "contents": [{"parts": [{"text": transcript}]}],
         "generationConfig": {
@@ -146,8 +165,12 @@ def request_audio(line, who, path):
     save_audio(path, mime, data)
 
 
-def prepare(max_new=8, interval=22, check=False):
+def prepare(max_new=8, interval=22, check=False, only_id=None):
     lines = list(dialogue())
+    if only_id is not None:
+        lines = [item for item in lines if item[0] == only_id]
+        if not lines:
+            raise ValueError(f"Unknown dialogue ID: {only_id}")
     missing = {clip_path(line, who): (key, who, line) for key, who, line in lines
                if not ready(clip_path(line, who))}
     print(f"Model: {MODEL}; voices: {VOICES}")
@@ -174,7 +197,7 @@ def prepare(max_new=8, interval=22, check=False):
         print(f"Requesting {key} ({VOICES[who]})...", flush=True)
         last = time.monotonic()
         try:
-            request_audio(line, who, path)
+            request_audio(line, who, path, key=key)
             duration(path)
         except Exception:
             if path.exists() and not ready(path):
