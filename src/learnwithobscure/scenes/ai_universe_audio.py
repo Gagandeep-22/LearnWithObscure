@@ -19,7 +19,7 @@ VOICES = {"student": "Achird", "robot": "Leda"}
 def clip_path(line, who):
     cache_key = f"{MODEL}:{VOICES[who]}:{line}"
     if who == "student" and line == "Zeno Sensei!":
-        cache_key += ":bewildered-style-v8"
+        cache_key += ":natural-achird-v9"
     key = hashlib.sha256(cache_key.encode("utf-8")).hexdigest()[:20]
     return AUDIO_DIR / f"{key}.wav"
 
@@ -129,12 +129,14 @@ def request_audio(line, who, path, key=None):
             "text": "Zeno Sensei!",
             "speechMetadata": {
                 "style": (
-                    "A lighthearted, bewildered anime student has just heard too many "
-                    "unfamiliar technical terms and calls his teacher for an "
-                    "explanation. Sound puzzled, mildly exasperated and energetic, "
-                    "with a playful upward inflection, never frightened, panicked "
-                    "or distressed. Say both words together as one natural call, "
-                    "without a pause after Zeno."
+                    "A youthful male student, speaking in his usual natural mid-range "
+                    "Achird vocal tone, is genuinely confused by unfamiliar technical "
+                    "concepts. He calls out to his teacher for an explanation: "
+                    "bewildered and mildly exasperated, but not frightened. "
+                    "Keep his natural masculine vocal character and comfortable "
+                    "speaking pitch, without a high-pitched, squeaky or theatrical "
+                    "delivery. Both words flow together as one natural call with "
+                    "no pause after Zeno."
                 )
             },
         }
