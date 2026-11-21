@@ -1,0 +1,42 @@
+{
+  "date": "21 NOV 2026",
+  "id": "2026-11-21-gemini-4-neon",
+  "source": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/",
+  "segments": [
+    {
+      "visual": "hook",
+      "title": "GOOGLE JUST DROPPED GEMINI 4 NEON",
+      "caption": "New AI model, announced November 18.",
+      "speech": "Code Crew! Google just dropped Gemini 4 Neon, and this one's got some serious coding skills!",
+      "seconds": 6
+    },
+    {
+      "visual": "reveal",
+      "title": "COMPLEX SOFTWARE ENGINEERING",
+      "caption": "Beyond basic code suggestions.",
+      "speech": "Announced on November eighteenth, this new AI model is designed to tackle complex software engineering tasks, not just answer coding questions!",
+      "seconds": 9
+    },
+    {
+      "visual": "workflow",
+      "title": "AI AGENT WORKFLOWS",
+      "caption": "Plan. Code. Test. Iterate.",
+      "speech": "Google says it ranks among the top AI models for intelligence and can help with sophisticated agent workflows.",
+      "seconds": 8
+    },
+    {
+      "visual": "demo",
+      "title": "REAL AI DEMONSTRATIONS",
+      "caption": "See what Google demonstrated.",
+      "speech": "Imagine giving an AI a complicated development task and having it work through multiple steps!",
+      "seconds": 8
+    },
+    {
+      "visual": "outro",
+      "title": "STAY CURIOUS, CODE CREW!",
+      "caption": "Subscribe to Learn With Obscure.",
+      "speech": "AI coding assistants are getting more capable, Code Crew! But remember, even the smartest AI needs its work checked. Follow Learn With Obscure for your next tech update!",
+      "seconds": 10
+    }
+  ]
+}
