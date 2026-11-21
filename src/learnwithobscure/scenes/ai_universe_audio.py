@@ -19,7 +19,7 @@ VOICES = {"student": "Achird", "robot": "Leda"}
 def clip_path(line, who):
     cache_key = f"{MODEL}:{VOICES[who]}:{line}"
     if who == "student" and line == "Zeno Sensei!":
-        cache_key += ":concerned-call-v3"
+        cache_key += ":speech-only-v4"
     key = hashlib.sha256(cache_key.encode("utf-8")).hexdigest()[:20]
     return AUDIO_DIR / f"{key}.wav"
 
@@ -121,20 +121,9 @@ def request_audio(line, who, path, key=None):
     if not re.fullmatch(r"gemini-[a-zA-Z0-9.-]+", MODEL):
         raise ValueError("Invalid LWO_GEMINI_TTS_MODEL.")
     if key == "intro-02":
-        # Only the introductory call needs character-specific direction.
-        # Never include this direction in the on-screen dialogue.
-        transcript = (
-            "Voice acting direction: Obscure is genuinely confused and worried "
-            "by a flood of unfamiliar AI terms. In one sudden, urgent call, he "
-            "shouts for his trusted mentor to help: 'Zeno Sensei!' Sound concerned, "
-            "bewildered and a little desperate, as though he needs an explanation "
-            "right now. Start 'Zeno' with a startled intake of breath, then raise "
-            "the intensity on 'Sensei!' The delivery must be a natural, emphatic "
-            "shout, not a sing-song or playful anime catchphrase. Do not sound "
-            "angry, cheerful, robotic or melodramatic. "
-            "Speak ONLY these words, with no direction spoken aloud: "
-            "Zeno Sensei!"
-        )
+        # Send speech text only. Previous voice-direction prose was spoken aloud
+        # by some TTS models even though it said "speak ONLY these words".
+        transcript = "Zeno Sensei!"
     else:
         transcript = line if not MODEL.endswith("-preview") else "Read aloud exactly: " + line
     body = {
