@@ -19,7 +19,7 @@ VOICES = {"student": "Achird", "robot": "Leda"}
 def clip_path(line, who):
     cache_key = f"{MODEL}:{VOICES[who]}:{line}"
     if who == "student" and line == "Zeno Sensei!":
-        cache_key += ":natural-achird-v9"
+        cache_key += ":connected-call-v10"
     key = hashlib.sha256(cache_key.encode("utf-8")).hexdigest()[:20]
     return AUDIO_DIR / f"{key}.wav"
 
@@ -135,8 +135,9 @@ def request_audio(line, who, path, key=None):
                     "bewildered and mildly exasperated, but not frightened. "
                     "Keep his natural masculine vocal character and comfortable "
                     "speaking pitch, without a high-pitched, squeaky or theatrical "
-                    "delivery. Both words flow together as one natural call with "
-                    "no pause after Zeno."
+                    "delivery. Treat Zeno Sensei as a single connected name in one "
+                    "breath: carry the sound directly from Zeno into Sensei, "
+                    "with no break, stop, reset, or sentence boundary between them."
                 )
             },
         }
