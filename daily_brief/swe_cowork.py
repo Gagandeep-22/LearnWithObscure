@@ -34,7 +34,7 @@ class ZenoSweCoWork(ZenoDailyBrief):
             self.finish_beat()
 
     def hook(self, segment):
-        title = headline("AI CAN CODE...\\nCAN IT DELIVER?", y=5.05, size=79,
+        title = headline("AI CAN CODE...\nCAN IT DELIVER?", y=5.05, size=79,
                          height=2.1, color=PURPLE)
         robot = sprite(3.2, -1.45, -0.05, max_width=3.1)
         code = pill("CODE: DONE!", color=PURPLE, ink=WHITE).scale(.93)
@@ -47,7 +47,7 @@ class ZenoSweCoWork(ZenoDailyBrief):
                    FadeIn(caption(segment["caption"])))
 
     def study(self, segment):
-        title = headline("101 REAL\\nCODE REPOSITORIES", y=5.1, size=81,
+        title = headline("101 REAL\nCODE REPOSITORIES", y=5.1, size=81,
                          height=2.1, color=PURPLE)
         cards = []
         for i, label in enumerate(("REAL CODEBASES", "SIMULATED TEAM", "11 AI MODELS")):
@@ -62,7 +62,7 @@ class ZenoSweCoWork(ZenoDailyBrief):
         self.phase(1, FadeIn(caption(segment["caption"])))
 
     def result(self, segment):
-        title = headline("FULL TASK\\nCOMPLETION", y=5.3, size=81,
+        title = headline("FULL TASK\nCOMPLETION", y=5.3, size=81,
                          height=1.85, color=PURPLE)
         number = text("< 8%", size=160, width=6.3, height=3.0,
                       color=PURPLE).move_to(at(0, .75))
@@ -75,7 +75,7 @@ class ZenoSweCoWork(ZenoDailyBrief):
         self.phase(1, FadeIn(qualifier), FadeIn(caption(segment["caption"])))
 
     def contrast(self, segment):
-        title = headline("WRITING CODE ≠\\nFINISHING THE JOB", y=5.1,
+        title = headline("WRITING CODE ≠\nFINISHING THE JOB", y=5.1,
                          size=72, height=2.15, color=PURPLE)
         labels = ("WRITE CODE", "FIND REQUIREMENTS", "WORK WITH TEAM", "PASS ALL TESTS")
         cards = []
@@ -90,7 +90,7 @@ class ZenoSweCoWork(ZenoDailyBrief):
         self.phase(1, FadeIn(caption(segment["caption"])))
 
     def outro(self, segment):
-        title = headline("AI: REPLACEMENT\\nOR TEAMMATE?", y=5.1, size=81,
+        title = headline("AI: REPLACEMENT\nOR TEAMMATE?", y=5.1, size=81,
                          height=2.05, color=PURPLE)
         zeno = sprite(3.2, -1.5, .0, max_width=3.25)
         debate = pill("YOUR TAKE?", color=PINK, ink=DARK).scale(.92)
