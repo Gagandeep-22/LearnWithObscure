@@ -1,0 +1,43 @@
+{
+  "date": "24 NOV 2026",
+  "id": "2026-11-24-swe-cowork",
+  "source": "https://arxiv.org/abs/2611.20218",
+  "research_note": "SWE-CoWork preprint submitted November 15, 2026. 101 assignments from real code repositories evaluated inside simulated engineering organizations; 11 models evaluated. Two leading models completed fewer than 8% of assignments. Not a general claim about all coding agents or engineering work.",
+  "segments": [
+    {
+      "visual": "hook",
+      "title": "AI CAN CODE. BUT CAN IT FINISH?",
+      "caption": "A new benchmark tests full task delivery.",
+      "speech": "Code Crew! AI can write code. But can it actually finish a software engineer's job?",
+      "seconds": 7
+    },
+    {
+      "visual": "study",
+      "title": "101 REAL REPOSITORIES",
+      "caption": "SWE-CoWork: simulated engineering workplaces.",
+      "speech": "Researchers created SWE-CoWork: one hundred and one development assignments using real code repositories, inside simulated engineering teams.",
+      "seconds": 10
+    },
+    {
+      "visual": "result",
+      "title": "UNDER 8% COMPLETE",
+      "caption": "Two leading models; full-assignment completion.",
+      "speech": "Eleven AI models were tested. Even the two leading models fully completed fewer than eight percent of assignments!",
+      "seconds": 9
+    },
+    {
+      "visual": "contrast",
+      "title": "CODING ISN'T DELIVERY",
+      "caption": "Partial test success is not full delivery.",
+      "speech": "They could pass many individual tests. But gathering requirements, collaborating, and shipping the whole task? Much harder!",
+      "seconds": 9
+    },
+    {
+      "visual": "outro",
+      "title": "DEVELOPERS STILL MATTER",
+      "caption": "One benchmark, not every coding task.",
+      "speech": "This is one research benchmark, not a verdict on every AI tool. So, will agents replace developers or become their best teammates? Tell us below, and follow Learn With Obscure!",
+      "seconds": 13
+    }
+  ]
+}
