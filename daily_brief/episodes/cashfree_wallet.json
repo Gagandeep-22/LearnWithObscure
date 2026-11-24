@@ -1,0 +1,43 @@
+{
+  "date": "24 NOV 2026",
+  "id": "2026-11-24-cashfree-wallet",
+  "source": "https://www.business-standard.com/finance/news/cashfree-wallet-ai-agents-payments-bill-payments-agentic-commerce-126112400451_1.html",
+  "research_note": "Cashfree introduced a prepaid wallet intended for authorized AI-agent bill payments with user-defined spending controls. Avoid implying unrestricted access to bank accounts or universal availability. Verify production launch details before upload.",
+  "segments": [
+    {
+      "visual": "hook",
+      "title": "AI CAN PAY YOUR BILLS?!",
+      "caption": "A new wallet for authorized AI agents.",
+      "speech": "Wait... AI can now pay your bills?! India's Cashfree just introduced a wallet designed for AI agents!",
+      "seconds": 8
+    },
+    {
+      "visual": "wallet",
+      "title": "PREPAID AI WALLET",
+      "caption": "Load a prepaid balance first.",
+      "speech": "Here's the idea. You add money to a prepaid wallet, and authorize your AI agent to use it for bill payments.",
+      "seconds": 9
+    },
+    {
+      "visual": "limits",
+      "title": "YOU SET THE LIMITS",
+      "caption": "Controls help limit what an agent can spend.",
+      "speech": "You set spending rules and limits. The agent doesn't need your underlying bank or card credentials to make those wallet payments.",
+      "seconds": 11
+    },
+    {
+      "visual": "flow",
+      "title": "AGENT → WALLET → BILL",
+      "caption": "Authorized bill payments, not unlimited spending.",
+      "speech": "So your agent could help handle an eligible bill without getting unrestricted access to your bank account. That's a big distinction!",
+      "seconds": 10
+    },
+    {
+      "visual": "outro",
+      "title": "WOULD YOU TRUST AI?",
+      "caption": "Would you let an agent pay a bill?",
+      "speech": "Would you trust an AI agent with your money, even with limits? Tell us below! I'm Zeno Sensei. Keep learning with Obscure!",
+      "seconds": 11
+    }
+  ]
+}
