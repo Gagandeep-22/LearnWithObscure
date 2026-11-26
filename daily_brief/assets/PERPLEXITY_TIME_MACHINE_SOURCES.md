@@ -1,12 +1,23 @@
-# Perplexity Time Machine — original visuals for the 27 Nov 2026 Short
+# Authentic Perplexity visuals — Zeno Brief (27 Nov 2026)
 
-Official launch: https://www.perplexity.ai/hub/blog/freeze-the-web-with-perplexity-time-machine
+Official announcement (25 Nov 2026): https://www.perplexity.ai/hub/blog/freeze-the-web-with-perplexity-time-machine
 
-Available authentic visuals:
-1. Official blog headline and introduction: take a clearly attributed short screen capture of the official Perplexity announcement.
-2. Official benchmark chart, labelled FIG. 01 on the same announcement page; contextualize as Perplexity's own reported benchmark rather than independent validation.
-3. Official code example on the announcement: highlight the literal `snapshot_as_of="2026-10-20T00:00:00Z"` call. Prefer recreating this short factual setting in Manim for legibility instead of screenshotting code.
+The Manim video can now **optionally show a genuine source screenshot** during scene two (SEARCH THE PAST WEB).
 
-Keep source attribution on screen or in the description. Check image licensing before reproducing third-party screenshots; source attribution alone does not confer reuse rights. The Manim animation works with no extra downloaded images.
+## Use your own screen capture of the official announcement
 
-Recommended overlay placement: intro 1–2 s real announcement screenshot, then animated Zeno + diagram, then 2 s authentic API example, ending with Zeno. Do not present generic imagery as screenshots of the actual product.
+1. Open the official Perplexity announcement above in a browser.
+2. Capture a clean screenshot of the Time Machine announcement, ideally with its headline and date, or its graphic. Avoid browser UI, popups, and other distracting details.
+3. Save it as `daily_brief/assets/perplexity_time_machine_official.png` inside the local repository.
+4. Rerender `ZenoPerplexityTimeMachine` using the existing PowerShell command.
+
+If that file exists, the animation will display the image with an on-screen **SOURCE: PERPLEXITY** attribution. Without it, the original animated pills still render correctly. No network is needed at render time.
+
+Use this as a factual reference image for commentary about Perplexity, not as a claim of live access to its API or UI. Confirm reuse permissions before publication; attribution is not automatically a copyright license. Consider using a small excerpt rather than a full screenshot. Include the link to the original announcement in the YouTube description.
+
+## Other source-backed visual options
+
+- Perplexity's reported benchmark chart, with a label saying **PERPLEXITY-REPORTED RESULTS** (not independently verified).
+- Perplexity's documented `snapshot_as_of="2026-10-20T00:00:00Z"` API setting, recreated legibly as original Manim code typography.
+
+The exact Zeno sprite and existing audio pipeline are unchanged.

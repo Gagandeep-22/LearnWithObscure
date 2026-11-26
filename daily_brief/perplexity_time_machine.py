@@ -43,6 +43,23 @@ class ZenoPerplexityTimeMachine(ZenoDailyBrief):
 
     def what(self, segment):
         title = headline("SEARCH THE\nPAST WEB", y=5, size=84, height=2.05, color=PURPLE)
+        # Authentic Perplexity screenshots are optional; no network is required to render.
+        image_path = ROOT / "assets" / "perplexity_time_machine_official.png"
+        if image_path.is_file():
+            picture = ImageMobject(str(image_path))
+            picture.scale_to_fit_width(6.2)
+            if picture.height > 4.4:
+                picture.scale_to_fit_height(4.4)
+            picture.move_to(at(0, .5))
+            border = SurroundingRectangle(picture, color=PURPLE, buff=.12, stroke_width=3)
+            source = text("SOURCE: PERPLEXITY", size=28, width=5.4,
+                          height=.48, color=PURPLE).move_to(at(0, -2.42))
+            self.phase(.22, FadeIn(title), FadeIn(picture))
+            self.phase(.65, Create(border), FadeIn(source))
+            self.phase(1, FadeIn(caption(segment["caption"])))
+            return
+
+        # The original animated explanation remains as the offline fallback.
         old = pill("PAST WEB SNAPSHOT", color=PURPLE, ink=WHITE).scale(.76).move_to(at(0, 1.6))
         today = pill("TODAY'S WEB", color=PINK, ink=DARK).scale(.85).move_to(at(0, -.3))
         result = pill("HISTORICAL RESULTS", color=PURPLE, ink=WHITE).scale(.77).move_to(at(0, -2.15))
