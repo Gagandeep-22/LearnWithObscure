@@ -1,0 +1,43 @@
+{
+  "date": "27 NOV 2026",
+  "id": "2026-11-27-perplexity-time-machine",
+  "source": "https://www.perplexity.ai/hub/blog/freeze-the-web-with-perplexity-time-machine",
+  "research_note": "Announced 25 November 2026. Time Machine is a developer API capability, not literal time travel or a general consumer website rewind. Uses stored copies captured at or before snapshot_as_of; available history up to 365 days. Visuals from Perplexity must be credited and usage rights reviewed.",
+  "segments": [
+    {
+      "visual": "hook",
+      "title": "AI CAN TIME TRAVEL?!",
+      "caption": "Perplexity launched Time Machine for developers.",
+      "speech": "Wait... AI can now time travel?! Well, not exactly! Perplexity has introduced something called Time Machine.",
+      "seconds": 8
+    },
+    {
+      "visual": "what",
+      "title": "SEARCH THE PAST WEB",
+      "caption": "See stored web snapshots from a chosen past date.",
+      "speech": "It lets AI agents search saved versions of web pages, as they existed at a chosen point in the past.",
+      "seconds": 9
+    },
+    {
+      "visual": "cutoff",
+      "title": "CHOOSE A CUTOFF DATE",
+      "caption": "The API uses a snapshot_as_of timestamp.",
+      "speech": "Developers just set a timestamp called snapshot as of. The search then uses archived copies from before that cutoff.",
+      "seconds": 10
+    },
+    {
+      "visual": "example",
+      "title": "NO FUTURE SPOILERS",
+      "caption": "Test predictions without leaking later answers.",
+      "speech": "Imagine testing whether an AI could predict an event. Normally, today's web might reveal the answer. This gives it only information available back then!",
+      "seconds": 13
+    },
+    {
+      "visual": "outro",
+      "title": "WOULD YOU TRY IT?",
+      "caption": "Historical snapshots, not a literal time machine.",
+      "speech": "Currently, it can go back up to three hundred sixty-five days. Would you try an AI time machine? I'm Zeno Sensei. Keep learning with Obscure!",
+      "seconds": 11
+    }
+  ]
+}
