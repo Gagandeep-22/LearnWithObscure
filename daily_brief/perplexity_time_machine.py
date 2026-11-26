@@ -34,7 +34,7 @@ class ZenoPerplexityTimeMachine(ZenoDailyBrief):
             self.finish_beat()
 
     def hook(self, segment):
-        title = headline("AI CAN TIME\\nTRAVEL?!", y=5, size=79, height=2.1, color=PURPLE)
+        title = headline("AI CAN TIME\nTRAVEL?!", y=5, size=79, height=2.1, color=PURPLE)
         zeno = sprite(3.12, -1.45, -.1, max_width=3.15)
         chip = pill("PERPLEXITY TIME MACHINE", color=PINK, ink=DARK).scale(.65).move_to(at(0, 1.7))
         self.phase(.3, FadeIn(title, shift=DOWN*.25), FadeIn(zeno))
@@ -42,7 +42,7 @@ class ZenoPerplexityTimeMachine(ZenoDailyBrief):
         self.phase(1, FadeIn(caption(segment["caption"])))
 
     def what(self, segment):
-        title = headline("SEARCH THE\\nPAST WEB", y=5, size=84, height=2.05, color=PURPLE)
+        title = headline("SEARCH THE\nPAST WEB", y=5, size=84, height=2.05, color=PURPLE)
         old = pill("PAST WEB SNAPSHOT", color=PURPLE, ink=WHITE).scale(.76).move_to(at(0, 1.6))
         today = pill("TODAY'S WEB", color=PINK, ink=DARK).scale(.85).move_to(at(0, -.3))
         result = pill("HISTORICAL RESULTS", color=PURPLE, ink=WHITE).scale(.77).move_to(at(0, -2.15))
@@ -51,7 +51,7 @@ class ZenoPerplexityTimeMachine(ZenoDailyBrief):
         self.phase(1, Indicate(old, color=PINK), FadeIn(caption(segment["caption"])))
 
     def cutoff(self, segment):
-        title = headline("CHOOSE A\\nCUTOFF DATE", y=5, size=79, height=2.1, color=PURPLE)
+        title = headline("CHOOSE A\nCUTOFF DATE", y=5, size=79, height=2.1, color=PURPLE)
         stamp = pill("snapshot_as_of", color=PURPLE, ink=WHITE).scale(.95).move_to(at(0, 1.35))
         date = pill("2026-10-20", color=PINK, ink=DARK).scale(.95).move_to(at(0, -.45))
         history = pill("OLDER SAVED PAGES", color=PURPLE, ink=WHITE).scale(.77).move_to(at(0, -2.1))
@@ -60,7 +60,7 @@ class ZenoPerplexityTimeMachine(ZenoDailyBrief):
         self.phase(1, Indicate(date, color=PURPLE), FadeIn(caption(segment["caption"])))
 
     def example(self, segment):
-        title = headline("NO FUTURE\\nSPOILERS!", y=5, size=82, height=2.1, color=PURPLE)
+        title = headline("NO FUTURE\nSPOILERS!", y=5, size=82, height=2.1, color=PURPLE)
         question = pill("PREDICT AN EVENT", color=PURPLE, ink=WHITE).scale(.8).move_to(at(0, 1.75))
         cutoff = pill("PAST NEWS ONLY", color=PINK, ink=DARK).scale(.84).move_to(at(0, -.25))
         fair = pill("FAIRER AI TEST", color=PURPLE, ink=WHITE).scale(.86).move_to(at(0, -2.2))
@@ -69,7 +69,7 @@ class ZenoPerplexityTimeMachine(ZenoDailyBrief):
         self.phase(1, Indicate(fair, color=PINK), FadeIn(caption(segment["caption"])))
 
     def outro(self, segment):
-        title = headline("WOULD YOU\\nTRY IT?", y=5, size=86, height=2.0, color=PURPLE)
+        title = headline("WOULD YOU\nTRY IT?", y=5, size=86, height=2.0, color=PURPLE)
         zeno = sprite(3.12, -1.45, -.05, max_width=3.15)
         period = pill("UP TO 365 DAYS BACK", color=PINK, ink=DARK).scale(.75).move_to(at(0, 1.7))
         follow = text("FOLLOW LEARN WITH OBSCURE", size=36, width=6.4,
