@@ -35,7 +35,7 @@ class ZenoGoogleWorkspaceMCP(ZenoDailyBrief):
             self.finish_beat()
 
     def hook(self, segment):
-        title = headline("YOUR AI AGENT\\nMEETS WORKSPACE", y=5.0, size=72, height=2.0, color=PURPLE)
+        title = headline("YOUR AI AGENT\nMEETS WORKSPACE", y=5.0, size=72, height=2.0, color=PURPLE)
         zeno = sprite(3.0, -1.5, -.15, max_width=3.15)
         msg = pill("GMAIL  +  DRIVE  +  CALENDAR", color=PINK, ink=DARK).scale(.65).move_to(at(0, 1.6))
         self.phase(.28, FadeIn(title, shift=DOWN * .25), FadeIn(zeno))
@@ -43,7 +43,7 @@ class ZenoGoogleWorkspaceMCP(ZenoDailyBrief):
         self.phase(1, FadeIn(caption(segment["caption"])))
 
     def reveal(self, segment):
-        title = headline("GOOGLE WORKSPACE\\n+ MCP", y=5.1, size=80, height=2.15, color=PURPLE)
+        title = headline("GOOGLE WORKSPACE\n+ MCP", y=5.1, size=80, height=2.15, color=PURPLE)
         acronym = pill("MODEL CONTEXT PROTOCOL", color=PURPLE, ink=WHITE).scale(.69).move_to(at(0, 1.3))
         agents = text("AI AGENT", size=56, width=5.0, color=DARK).move_to(at(0, -.65))
         self.phase(.3, FadeIn(title), GrowFromCenter(acronym))
@@ -51,7 +51,7 @@ class ZenoGoogleWorkspaceMCP(ZenoDailyBrief):
         self.phase(1, FadeIn(caption(segment["caption"])))
 
     def connections(self, segment):
-        title = headline("ONE STANDARD\\nMANY TOOLS", y=5.1, size=77, height=2.0, color=PURPLE)
+        title = headline("ONE STANDARD\nMANY TOOLS", y=5.1, size=77, height=2.0, color=PURPLE)
         hub = pill("AI AGENT", color=PURPLE, ink=WHITE).scale(.95).move_to(at(0, 1.65))
         services = [
             pill(name, color=PINK if i % 2 == 0 else PURPLE,
@@ -66,7 +66,7 @@ class ZenoGoogleWorkspaceMCP(ZenoDailyBrief):
         self.phase(1, FadeIn(caption(segment["caption"])))
 
     def permissions(self, segment):
-        title = headline("PERMISSIONS\\nSTILL MATTER", y=5.05, size=82, height=2.0, color=PURPLE)
+        title = headline("PERMISSIONS\nSTILL MATTER", y=5.05, size=82, height=2.0, color=PURPLE)
         allowed = pill("AUTHORIZED ACCESS", color=PURPLE, ink=WHITE).scale(.83).move_to(at(0, 1.4))
         limited = pill("NOT UNLIMITED ACCESS", color=PINK, ink=DARK).scale(.79).move_to(at(0, -.8))
         self.phase(.25, FadeIn(title), GrowFromCenter(allowed))
@@ -74,7 +74,7 @@ class ZenoGoogleWorkspaceMCP(ZenoDailyBrief):
         self.phase(1, FadeIn(caption(segment["caption"])))
 
     def outro(self, segment):
-        title = headline("WE'RE BUILDING\\nAN AI AGENT!", y=5.05, size=79, height=2.05, color=PURPLE)
+        title = headline("WE'RE BUILDING\nAN AI AGENT!", y=5.05, size=79, height=2.05, color=PURPLE)
         zeno = sprite(3.05, -1.45, -.1, max_width=3.15)
         badge = pill("ZENO TECH SCOUT", color=PINK, ink=DARK).scale(.82).move_to(at(0, 1.5))
         follow = text("FOLLOW LEARN WITH OBSCURE", size=34, width=6.35,
