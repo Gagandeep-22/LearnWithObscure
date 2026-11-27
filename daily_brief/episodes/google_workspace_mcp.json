@@ -1,0 +1,43 @@
+{
+  "date": "28 NOV 2026",
+  "id": "2026-11-28-google-workspace-mcp",
+  "source": "https://workspaceupdates.googleblog.com/2026/11/mcp-servers-cli-standardized-usage-tiers-now-available.html",
+  "research_note": "Google announced general availability of Workspace MCP servers. Explain MCP as a standard interface for permitted tool access; do not suggest agents have unrestricted access to inboxes or documents. Confirm announcement wording and any plan/availability restrictions before publication.",
+  "segments": [
+    {
+      "visual": "hook",
+      "title": "AI AGENTS MEET GOOGLE WORKSPACE",
+      "caption": "An easier way to connect AI with everyday tools.",
+      "speech": "Imagine an AI agent helping you work with Gmail, Google Drive, and Calendar. Google just made that easier!",
+      "seconds": 8
+    },
+    {
+      "visual": "reveal",
+      "title": "WORKSPACE MCP SERVERS",
+      "caption": "A standard way for agents to use tools.",
+      "speech": "Google has announced general availability of Workspace M C P servers. M C P stands for Model Context Protocol.",
+      "seconds": 9
+    },
+    {
+      "visual": "connections",
+      "title": "ONE STANDARD. MANY TOOLS.",
+      "caption": "Gmail • Drive • Calendar • Docs",
+      "speech": "Instead of building a different integration for every service, developers can connect agents to supported Workspace tools through a standard interface.",
+      "seconds": 11
+    },
+    {
+      "visual": "permissions",
+      "title": "PERMISSIONS STILL MATTER",
+      "caption": "Access is controlled, not unlimited.",
+      "speech": "But this doesn't give an AI unlimited access. The agent still needs the right permissions, and developers must handle access carefully.",
+      "seconds": 10
+    },
+    {
+      "visual": "outro",
+      "title": "WE'RE BUILDING AN AI AGENT!",
+      "caption": "Follow Learn With Obscure for more tech news.",
+      "speech": "And guess what? We're building our own AI agent next! I'm Zeno Sensei. Stay curious, Code Crew!",
+      "seconds": 8
+    }
+  ]
+}
